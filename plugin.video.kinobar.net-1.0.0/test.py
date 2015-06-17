@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 #this file is done for testing functionality of some defs on PC 
 import re, os, urllib, urllib2, cookielib, time, sys
 from time import gmtime, strftime
@@ -146,10 +147,26 @@ soup = BeautifulSoup(html) #, fromEncoding="windows-1251")
 for rec in soup.find('div',{'id':'allEntries'}).findAll('div', {'id':re.compile('entryID*')}):
     furl = rec.find('div', {'class':'mat-title'}).find('a')['href']
     ftitle = rec.find('div', {'class':'mat-title'}).text
-    
+    fimg = rec.find('div', {'class':'mat-img'}).find('img')['src']
+    for r in rec.find('div', {'class':'mat-txt'}).findAll('p'):
+        print r.text
+        #print "****"
+        if u'Год:' in r.text:
+            #print r.text
+            fyear = int(re.findall(r'\d+',r.text)[0])
+            print fyear
+        if u'Страна:' in r.text:
+            #print r.text
+            fcountry = r.text.split(':')[1]
+            print fcountry
+        if u'Жарн' in r.text:
+            #print r.text
+            fgenre = r.text.split(':')[1]
+            print fgenre
+
     print furl
     print ftitle
-    print rec
+    print fimg
     print "--------------------"
 
 

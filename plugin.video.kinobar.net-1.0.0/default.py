@@ -266,29 +266,34 @@ def Movie_List(params):
         soup = BeautifulSoup(html)
 
         # -- get movie info
-        for rec in soup.find('div',{'id':'dle-content'}).findAll('table'):
+        for rec in soup.find('div',{'id':'allEntries'}).findAll('div', {'id':re.compile('entryID*')}):
             try:
                 #--
-                mi.url      = rec.find('td',{'class':'short-story_title'}).find('a')['href']
-                name_year = rec.find('td',{'class':'short-story_title'}).find('a').text.encode('utf-8')
-                mi.title    = name_year.split('(')[0]
-                mi.year     = int(name_year.split('(')[1].replace(')',''))
+                mi.url      = rec.find('div', {'class':'mat-title'}).find('a')['href']
+                mi.title    = rec.find('div', {'class':'mat-title'}).text
                 #--
-                mi.img      = 'http://v720.ru/'+rec.find('td',{'class':'short-story_img'}).find('img')['src']
+                mi.img      = rec.find('div', {'class':'mat-img'}).find('img')['src']
                 #--
-                for r in rec.find('td',{'class':'short-story_text'}).text.split('|'):
-                    if r.split(':', 1)[0] == u'Оригинальное название':
-                        mi.orig     = r.split(':',1)[1].encode('utf-8')
-                    elif r.split(':')[0] == u'Страна':
-                        mi.country  = r.split(':')[1].encode('utf-8')
-                    elif r.split(':')[0] == u'Жанр':
-                        mi.genre    = r.split(':')[1].encode('utf-8')
-                    elif r.split(':', 1)[0] == u'В главных ролях':
-                        mi.artist   = r.split(':', 1)[1].encode('utf-8').split(',')
-                    elif r.split(':')[0] == u'Режиссер':
-                        mi.director = r.split(':')[1].encode('utf-8')
-                    elif r.split(':', 1)[0] == u'О фильме':
-                        mi.text     = r.split(':', 1)[1].encode('utf-8')
+                for r in rec.find('div', {'class':'mat-txt'}).findAll('p'):
+                    if u'Год:' in r.text:
+                        mi.year = int(re.findall(r'\d+',r.text)[0])
+                    if u'Страна:' in r.text:
+                        mi.country = r.text.split(':')[1].encode('utf-8')
+                    if u'Жанр' in r.text:
+                        mi.genre = r.text.split(':')[1].encode('utf-8')
+                    mi.text = r.text.encode('utf-8')
+                    #if r.split(':', 1)[0] == u'Оригинальное название':
+                    #    mi.orig     = r.split(':',1)[1].encode('utf-8')
+                    #elif r.split(':')[0] == u'Страна':
+                    #    mi.country  = r.split(':')[1].encode('utf-8')
+                    #elif r.split(':')[0] == u'Жанр':
+                    #    mi.genre    = r.split(':')[1].encode('utf-8')
+                    #elif r.split(':', 1)[0] == u'В главных ролях':
+                    #    mi.artist   = r.split(':', 1)[1].encode('utf-8').split(',')
+                    #elif r.split(':')[0] == u'Режиссер':
+                    #    mi.director = r.split(':')[1].encode('utf-8')
+                    #elif r.split(':', 1)[0] == u'О фильме':
+                    #    mi.text     = r.split(':', 1)[1].encode('utf-8')
                 #--
                 i = xbmcgui.ListItem(mi.title, iconImage=mi.img, thumbnailImage=mi.img)
                 u = sys.argv[0] + '?mode=SOURCE'
