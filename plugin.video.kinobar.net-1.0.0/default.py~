@@ -261,7 +261,7 @@ def Movie_List(params):
 
         #== get movie list =====================================================
         url = Get_URL(par)
-        html = get_HTML(url)#.replace('<br />','|')
+        html = get_HTML(url).replace('<br />','|')
         # -- parsing web page --------------------------------------------------
         soup = BeautifulSoup(html)
 
