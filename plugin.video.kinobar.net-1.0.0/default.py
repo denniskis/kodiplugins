@@ -136,12 +136,12 @@ def Get_Parameters(params):
     #-----
     return p
 
-#---------- get HD720.RU URL --------------------------------------------------
+#---------- get kinobar.net URL --------------------------------------------------
 def Get_URL(par):
     url = 'http://kinobar.net/'
     #-- genre
     if par.genre <> '':
-        url += 'news/'+par.genre+'&'
+        url += 'news/'+par.genre.split('|')[0]+'/'par.page+'-0-'+par.genre.split('|')[1]+'&'
     #-- page
     url += '?page'+par.page
 
@@ -152,7 +152,7 @@ def Get_Page_and_Movies_Count(par):
     url = 'http://kinobar.net/'
     #-- genre
     if par.genre <> '':
-        url += 'do=cat&category='+par.genre
+        url += 'news/'+par.genre.split('|')[0]+'/'par.page+'-0-'+par.genre.split('|')[1]+'&'
     html = get_HTML(url)
     # -- parsing web page ------------------------------------------------------
     soup = BeautifulSoup(html) #, fromEncoding="windows-1251")
@@ -451,7 +451,7 @@ def Source_List(params):
     name = urllib.unquote_plus(params['name'])
 
     #== get movie list =====================================================
-    html = get_HTML(url).replace('<br />','|')
+    html = get_HTML(url) #.replace('<br />','|')
 
     # -- parsing web page --------------------------------------------------
     soup = BeautifulSoup(html, fromEncoding="windows-1251")
@@ -607,15 +607,16 @@ def Genre_List(params):
     par = Get_Parameters(params)
 
     #-- get generes
-    url = 'http://v720.ru/'
+    url = 'http://kinobar.net/'
     html = get_HTML(url)
 
     # -- parsing web page ------------------------------------------------------
     soup = BeautifulSoup(html, fromEncoding="windows-1251")
 
-    for rec in soup.findAll('div',{'class':'menu_line'}):
-        name     = unescape(rec.find('a').text).encode('utf-8')
-        genre_id = rec.find('a')['href'].replace('/', '')
+    for rec in soup.find('div',{'id':'sidebarr'}).findAll('li'):
+        name     = rec.find('a').text.encode('utf-8')
+        pregenre = rec.find('a')['href'].split('/')
+        genre_id = pregenre[-2] + '|'+ pregenre[-1].split('-')[-1]
 
         i = xbmcgui.ListItem(name, iconImage=icon, thumbnailImage=icon)
         u = sys.argv[0] + '?mode=MOVIE'
@@ -628,7 +629,6 @@ def Genre_List(params):
 
     xbmcplugin.addSortMethod(int(sys.argv[1]), xbmcplugin.SORT_METHOD_LABEL)
     xbmcplugin.endOfDirectory(h)
-
 
 #-------------------------------------------------------------------------------
 

@@ -143,32 +143,40 @@ html = get_HTML(url)
 # -- parsing web page ------------------------------------------------------
 soup = BeautifulSoup(html) #, fromEncoding="windows-1251")
 
-#find total number of pages
-for rec in soup.find('div',{'id':'allEntries'}).findAll('div', {'id':re.compile('entryID*')}):
-    furl = rec.find('div', {'class':'mat-title'}).find('a')['href']
-    ftitle = rec.find('div', {'class':'mat-title'}).text
-    fimg = rec.find('div', {'class':'mat-img'}).find('img')['src']
-    for r in rec.find('div', {'class':'mat-txt'}).findAll('p'):
-        print r.text
-        #print "****"
-        if u'Год:' in r.text:
-            #print r.text
-            fyear = int(re.findall(r'\d+',r.text)[0])
-            print fyear
-        if u'Страна:' in r.text:
-            #print r.text
-            fcountry = r.text.split(':')[1]
-            print fcountry
-        if u'Жарн' in r.text:
-            #print r.text
-            fgenre = r.text.split(':')[1]
-            print fgenre
+def Genre_List(params):
+    #-- get filter parameters
+    par = Get_Parameters(params)
 
-    print furl
-    print ftitle
-    print fimg
-    print "--------------------"
+    #-- get generes
+    url = 'http://kinobar.net/'
+    html = get_HTML(url)
 
+    # -- parsing web page ------------------------------------------------------
+    soup = BeautifulSoup(html, fromEncoding="windows-1251")
 
+    for rec in soup.find('div',{'id':'sidebarr'}).findAll('li'):
+        name     = rec.find('a').text.encode('utf-8')
+        pregenre = rec.find('a')['href'].split('/')
+        genre_id = pregenre[-2] + '|'+ pregenre[-1].split('-')[-1]
 
+        i = xbmcgui.ListItem(name, iconImage=icon, thumbnailImage=icon)
+        u = sys.argv[0] + '?mode=MOVIE'
+        u += '&name=%s'%urllib.quote_plus(name)
+        #-- filter parameters
+        u += '&page=%s'%urllib.quote_plus(par.page)
+        u += '&genre=%s'%urllib.quote_plus(genre_id)
+        u += '&genre_name=%s'%urllib.quote_plus(name)
+        xbmcplugin.addDirectoryItem(h, u, i, True)
 
+    xbmcplugin.addSortMethod(int(sys.argv[1]), xbmcplugin.SORT_METHOD_LABEL)
+    xbmcplugin.endOfDirectory(h)
+
+url = 'http://kinobar.net/'
+html = get_HTML(url)
+soup = BeautifulSoup(html)    
+for rec in soup.find('div',{'id':'sidebarr'}).findAll('li'):
+    pregenre = rec.find('a')['href'].split('/')
+    genre_id = pregenre[-2] + '|'+ pregenre[-1].split('-')[-1]
+    name = rec.find('a').text.encode('utf-8')
+    print genre_id
+    print name
