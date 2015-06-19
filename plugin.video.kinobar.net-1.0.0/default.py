@@ -454,7 +454,7 @@ def Source_List(params):
     html = get_HTML(url) #.replace('<br />','|')
 
     # -- parsing web page --------------------------------------------------
-    soup = BeautifulSoup(html, fromEncoding="windows-1251")
+    soup = BeautifulSoup(html)
     # -- get movie info
     for rec in soup.find('td', {'class':'full-story_text'}).text.split('|'):
         if rec.split(':', 1)[0] == u'Название':
