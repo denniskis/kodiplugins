@@ -141,7 +141,9 @@ def Get_URL(par):
     url = 'http://kinobar.net/'
     #-- genre
     if par.genre <> '':
-        url += 'news/'+par.genre.split('|')[0]+'/'par.page+'-0-'+par.genre.split('|')[1]+'&'
+        xbmc.log("Parameters par.genre:")
+        xbmc.log(str( par.genre ))
+        #url += 'news/'+par.genre.split('|')[0]+'/'par.page+'-0-'+par.genre.split('|')[1]+'&'
     #-- page
     url += '?page'+par.page
 
@@ -151,8 +153,8 @@ def Get_URL(par):
 def Get_Page_and_Movies_Count(par):
     url = 'http://kinobar.net/'
     #-- genre
-    if par.genre <> '':
-        url += 'news/'+par.genre.split('|')[0]+'/'par.page+'-0-'+par.genre.split('|')[1]+'&'
+    #if par.genre <> '':
+        #url += 'news/'+par.genre.split('|')[0]+'/'par.page+'-0-'+par.genre.split('|')[1]+'&'
     html = get_HTML(url)
     # -- parsing web page ------------------------------------------------------
     soup = BeautifulSoup(html) #, fromEncoding="windows-1251")
@@ -264,14 +266,14 @@ def Movie_List(params):
         html = get_HTML(url)#.replace('<br />','|')
         # -- parsing web page --------------------------------------------------
         soup = BeautifulSoup(html)
-
         # -- get movie info
         for rec in soup.find('div',{'id':'allEntries'}).findAll('div', {'id':re.compile('entryID*')}):
             try:
                 #--
                 mi.url      = rec.find('div', {'class':'mat-title'}).find('a')['href']
-                mi.title    = rec.find('div', {'class':'mat-title'}).text
+                mi.title    = rec.find('div', {'class':'mat-title'}).text.encode('utf-8')
                 #--
+                #xbmc.log(str( rec.find('div', {'class':'mat-img'}).find('img')['src'] ))
                 mi.img      = rec.find('div', {'class':'mat-img'}).find('img')['src']
                 #--
                 for r in rec.find('div', {'class':'mat-txt'}).findAll('p'):
@@ -279,8 +281,8 @@ def Movie_List(params):
                         mi.year = int(re.findall(r'\d+',r.text)[0])
                     if u'Страна:' in r.text:
                         mi.country = r.text.split(':')[1].encode('utf-8')
-                    if u'Жанр' in r.text:
-                        mi.genre = r.text.split(':')[1].encode('utf-8')
+                    #if u'Жанр' in r.text:
+                    #    mi.genre = r.text.split(':')[1].encode('utf-8')
                     mi.text = r.text.encode('utf-8')
                     #if r.split(':', 1)[0] == u'Оригинальное название':
                     #    mi.orig     = r.split(':',1)[1].encode('utf-8')
@@ -301,10 +303,7 @@ def Movie_List(params):
                 u += '&url=%s'%urllib.quote_plus(mi.url)
                 u += '&img=%s'%urllib.quote_plus(mi.img)
                 i.setInfo(type='video', infoLabels={ 'title':      mi.title,
-                                                    'originaltitle':mi.orig,
                             						'year':        mi.year,
-                            						'director':    mi.director,
-                                                    'artist':      mi.artist,
                             						'plot':        mi.text,
                             						'country':     mi.country,
                             						'genre':       mi.genre})
@@ -456,7 +455,8 @@ def Source_List(params):
     # -- parsing web page --------------------------------------------------
     soup = BeautifulSoup(html)
     # -- get movie info
-    for rec in soup.find('td', {'class':'full-story_text'}).text.split('|'):
+    for rec in soup.find('div', {'id':'traf-zona'}).findAll('p'):
+        xbmc.log(str(rec))
         if rec.split(':', 1)[0] == u'Название':
             mi.tittle = rec.split(':', 1)[1]
 
