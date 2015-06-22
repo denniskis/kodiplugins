@@ -468,16 +468,29 @@ def Source_List(params):
     #we can display mp4 and flv sources; for now keeping only 1
     source_number = 1
     iframe = soup.find('iframe')
-    if (iframe is not None) and ('video_ext.php' in iframe['src']):
-        s_url = iframe['src']            
-        s_title = '[COLOR FF00FF00] ([/COLOR][COLOR FF00FFFF]ВКонтакте[/COLOR][COLOR FF00FF00])[/COLOR]'
-        i = xbmcgui.ListItem(s_title+' '+name, iconImage=img, thumbnailImage=img)
-        u = sys.argv[0] + '?mode=PLAY'
-        u += '&name=%s'%urllib.quote_plus(s_title+' '+name)
-        u += '&url=%s'%urllib.quote_plus(s_url)
-        u += '&img=%s'%urllib.quote_plus(img)
-        u += '&vtype=%s'%urllib.quote_plus('VK')
-        xbmcplugin.addDirectoryItem(h, u, i, False)
+    if iframe is not None: 
+        if 'video_ext.php' in iframe['src']:
+            s_url = iframe['src']
+            s_title = '[COLOR FF00FF00] ([/COLOR][COLOR FF00FFFF]ВКонтакте[/COLOR][COLOR FF00FF00])[/COLOR]'
+            i = xbmcgui.ListItem(s_title+' '+name, iconImage=img, thumbnailImage=img)
+            u = sys.argv[0] + '?mode=PLAY'
+            u += '&name=%s'%urllib.quote_plus(s_title+' '+name)
+            u += '&url=%s'%urllib.quote_plus(s_url)
+            u += '&img=%s'%urllib.quote_plus(img)
+            u += '&vtype=%s'%urllib.quote_plus('VK')
+            xbmcplugin.addDirectoryItem(h, u, i, False)
+        else:
+            html = get_HTML(iframe['src'])
+            s_url = re.findall ( '<video width="100%" height="100%" src="(.*?)" type="video/mp4"', html, re.DOTALL)[0]	
+            s_title = '[COLOR FF00FF00]SOURCE #'+str(source_number)+' ([/COLOR][COLOR FF00FFFF].MP4[/COLOR][COLOR FF00FF00])[/COLOR]'
+            source_number = source_number + 1
+            i = xbmcgui.ListItem(s_title+' '+name, iconImage=img, thumbnailImage=img)
+            u = sys.argv[0] + '?mode=PLAY'
+            u += '&name=%s'%urllib.quote_plus(s_title+' '+name)
+            u += '&url=%s'%urllib.quote_plus(s_url)
+            u += '&img=%s'%urllib.quote_plus(img)
+            u += '&vtype=%s'%urllib.quote_plus('MP4')
+            xbmcplugin.addDirectoryItem(h, u, i, False)
     iframeurl = soup.find('object', {'id':'pl'})
     if (iframeurl is not None) and (iframeurlis['data'] is not None):
         html = get_HTML(iframeurl['data'])
