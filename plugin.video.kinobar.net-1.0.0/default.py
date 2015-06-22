@@ -141,9 +141,9 @@ def Get_URL(par):
     url = 'http://kinobar.net/'
     #-- genre
     if par.genre <> '':
-        xbmc.log("Parameters par.genre:")
-        xbmc.log(str( par.genre ))
-        #url += 'news/'+par.genre.split('|')[0]+'/'par.page+'-0-'+par.genre.split('|')[1]+'&'
+        genre = par.genre.split('|')
+        url += 'news/' + '/' + genre[0] + '-0-' + genre[1] + '&'
+        #+ genre[0])+'/' + str(par.page) + '-0-' + str(genre[1]) + '&'
     #-- page
     url += '?page'+par.page
 
@@ -153,8 +153,9 @@ def Get_URL(par):
 def Get_Page_and_Movies_Count(par):
     url = 'http://kinobar.net/'
     #-- genre
-    #if par.genre <> '':
-        #url += 'news/'+par.genre.split('|')[0]+'/'par.page+'-0-'+par.genre.split('|')[1]+'&'
+    if par.genre <> '':
+        genre = par.genre.split('|')
+        url += 'news/' + '/' + genre[0] + '-0-' + genre[1] + '&'
     html = get_HTML(url)
     # -- parsing web page ------------------------------------------------------
     soup = BeautifulSoup(html) #, fromEncoding="windows-1251")
@@ -281,22 +282,7 @@ def Movie_List(params):
                         mi.year = int(re.findall(r'\d+',r.text)[0])
                     if u'Страна:' in r.text:
                         mi.country = r.text.split(':')[1].encode('utf-8')
-                    #if u'Жанр' in r.text:
-                    #    mi.genre = r.text.split(':')[1].encode('utf-8')
                     mi.text = r.text.encode('utf-8')
-                    #if r.split(':', 1)[0] == u'Оригинальное название':
-                    #    mi.orig     = r.split(':',1)[1].encode('utf-8')
-                    #elif r.split(':')[0] == u'Страна':
-                    #    mi.country  = r.split(':')[1].encode('utf-8')
-                    #elif r.split(':')[0] == u'Жанр':
-                    #    mi.genre    = r.split(':')[1].encode('utf-8')
-                    #elif r.split(':', 1)[0] == u'В главных ролях':
-                    #    mi.artist   = r.split(':', 1)[1].encode('utf-8').split(',')
-                    #elif r.split(':')[0] == u'Режиссер':
-                    #    mi.director = r.split(':')[1].encode('utf-8')
-                    #elif r.split(':', 1)[0] == u'О фильме':
-                    #    mi.text     = r.split(':', 1)[1].encode('utf-8')
-                #--
                 i = xbmcgui.ListItem(mi.title, iconImage=mi.img, thumbnailImage=mi.img)
                 u = sys.argv[0] + '?mode=SOURCE'
                 u += '&name=%s'%urllib.quote_plus(mi.title)
@@ -307,7 +293,6 @@ def Movie_List(params):
                             						'plot':        mi.text,
                             						'country':     mi.country,
                             						'genre':       mi.genre})
-                #i.setProperty('fanart_image', mi.img)
                 xbmcplugin.addDirectoryItem(h, u, i, True)
             except:
                 pass
@@ -357,86 +342,44 @@ def Movie_Search(params):
             else:
                 return False
         #-- get search url
-        url = 'http://v720.ru/index.php?do=search'
-        #-- serach parameters ---------
-        values = {
-                        'beforeafter'       :	'after',
-                        #'catlist[]'	        :   0,
-                        'do'                :	'search',
-                        'full_search'       :	1,
-                        'replyless'         :	0,
-                        'replylimit'        :	0,
-                        'resorder'          :	'asc',
-                        'result_from'       :	1,
-                        'result_num'        :	200,
-                        'search_start'      :	1,
-                        'searchdate'        :	0,
-                        'searchuser'	    :   '',
-                        'showposts'         :	0,
-                        'sortby'            :	'title',
-                        'story'         	:   par.search.decode('utf-8').encode('cp1251'),
-                        'subaction'         :	'search',
-                        'titleonly'         :  	3
-                    }
-
-        post = urllib.urlencode(values)
-
+        #searchstr = urllib.urlencode(par.search)
+        xbmc.log(par.search)
+        url = 'http://kinobar.net/search/?q=' + par.search
+        
+        #searchstr = urllib.urlencode(par.search)
         #== get movie list =====================================================
-        html = get_HTML(url, post).replace('<div id="sort">', '<div id="MOVIE"><div id="sort">').replace('<div class="bottom_content">', '</div><div class="bottom_content">').replace('<br />','|')
+        html = get_HTML(url) 
         # -- parsing web page ------------------------------------------------------
-        soup = BeautifulSoup(html, fromEncoding="windows-1251")
-
-        for rec in soup.findAll('div', {'class':'middle_content'}):
-            if rec.find('form'):
-                s = rec.text.replace(u'По Вашему запросу найдено', '##').replace(u'ответов', '##')
-                try:
-                    par.count = int(re.compile('## (.+?) ##').findall(s)[0])
-                except:
-                    pass
-
-
-
+        soup = BeautifulSoup(html)
+        
         # -- add header info
         Get_Header(par)
-
-        for rec in soup.findAll('div', {'id':'MOVIE'}):
+        #!this is not working and needs to be changed!
+        for rec in soup.find('div',{'id':'allEntries'}).findAll('div', {'id':re.compile('entryID*')}):
             try:
                 #--
-                mi.url      = rec.find('div',{'id':'sort'}).find('a')['href']
-                name_year = rec.find('div',{'id':'sort'}).find('a').text.encode('utf-8')
-                mi.title    = name_year.split('(')[0]
-                mi.year     = int(name_year.split('(')[1].replace(')',''))
+                mi.url      = rec.find('div', {'class':'mat-title'}).find('a')['href']
+                mi.title    = rec.find('div', {'class':'mat-title'}).text.encode('utf-8')
                 #--
-                mi.img      = 'http://v720.ru/'+rec.find('td',{'class':'short-story_img'}).find('img')['src']
+                #xbmc.log(str( rec.find('div', {'class':'mat-img'}).find('img')['src'] ))
+                mi.img      = rec.find('div', {'class':'mat-img'}).find('img')['src']
                 #--
-                for r in rec.find('td',{'class':'short-story_text'}).text.split('|'):
-                    if r.split(':', 1)[0] == u'Оригинальное название':
-                        mi.orig     = r.split(':',1)[1].encode('utf-8')
-                    elif r.split(':')[0] == u'Страна':
-                        mi.country  = r.split(':')[1].encode('utf-8')
-                    elif r.split(':')[0] == u'Жанр':
-                        mi.genre    = r.split(':')[1].encode('utf-8')
-                    elif r.split(':', 1)[0] == u'В главных ролях':
-                        mi.artist   = r.split(':', 1)[1].encode('utf-8').split(',')
-                    elif r.split(':')[0] == u'Режиссер':
-                        mi.director = r.split(':')[1].encode('utf-8')
-                    elif r.split(':', 1)[0] == u'О фильме':
-                        mi.text     = r.split(':', 1)[1].encode('utf-8')
-                #--
+                for r in rec.find('div', {'class':'mat-txt'}).findAll('p'):
+                    if u'Год:' in r.text:
+                        mi.year = int(re.findall(r'\d+',r.text)[0])
+                    if u'Страна:' in r.text:
+                        mi.country = r.text.split(':')[1].encode('utf-8')
+                    mi.text = r.text.encode('utf-8')
                 i = xbmcgui.ListItem(mi.title, iconImage=mi.img, thumbnailImage=mi.img)
                 u = sys.argv[0] + '?mode=SOURCE'
                 u += '&name=%s'%urllib.quote_plus(mi.title)
                 u += '&url=%s'%urllib.quote_plus(mi.url)
                 u += '&img=%s'%urllib.quote_plus(mi.img)
                 i.setInfo(type='video', infoLabels={ 'title':      mi.title,
-                                                    'originaltitle':mi.orig,
                             						'year':        mi.year,
-                            						'director':    mi.director,
-                                                    'artist':      mi.artist,
                             						'plot':        mi.text,
                             						'country':     mi.country,
                             						'genre':       mi.genre})
-                #i.setProperty('fanart_image', mi.img)
                 xbmcplugin.addDirectoryItem(h, u, i, True)
             except:
                 pass
@@ -456,13 +399,12 @@ def Source_List(params):
     soup = BeautifulSoup(html)
     # -- get movie info
     for rec in soup.find('div', {'id':'traf-zona'}).findAll('p'):
-        xbmc.log(str(rec))
         if u'Название' in rec.text:
             mi.title = rec.text.split(':',1)[1]
         if u'Год' in rec.text:
             mi.year = rec.text.split(':', 1)[1]
         if u'Жанр' in rec.text:
-    mi.genre = rec.text.split(':', 1)[1]
+            mi.genre = rec.text.split(':', 1)[1]
 
     #get source info
     #we can display mp4 and flv sources; for now keeping only 1
@@ -492,7 +434,7 @@ def Source_List(params):
             u += '&vtype=%s'%urllib.quote_plus('MP4')
             xbmcplugin.addDirectoryItem(h, u, i, False)
     iframeurl = soup.find('object', {'id':'pl'})
-    if (iframeurl is not None) and (iframeurlis['data'] is not None):
+    if (iframeurl is not None) and (iframeurl['data'] is not None):
         html = get_HTML(iframeurl['data'])
         s_url = re.findall ( '<video width="100%" height="100%" src="(.*?)" type="video/mp4"', html, re.DOTALL)[0]	
         s_title = '[COLOR FF00FF00]SOURCE #'+str(source_number)+' ([/COLOR][COLOR FF00FFFF].MP4[/COLOR][COLOR FF00FF00])[/COLOR]'
