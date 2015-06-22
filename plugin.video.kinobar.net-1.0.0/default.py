@@ -457,142 +457,46 @@ def Source_List(params):
     # -- get movie info
     for rec in soup.find('div', {'id':'traf-zona'}).findAll('p'):
         xbmc.log(str(rec))
-        if rec.split(':', 1)[0] == u'Название':
-            mi.tittle = rec.split(':', 1)[1]
+        if u'Название' in rec.text:
+            mi.title = rec.text.split(':',1)[1]
+        if u'Год' in rec.text:
+            mi.year = rec.text.split(':', 1)[1]
+        if u'Жанр' in rec.text:
+    mi.genre = rec.text.split(':', 1)[1]
 
-        if rec.split(':', 1)[0] == u'Оригинальное название':
-            mi.orig = rec.split(':', 1)[1]
-
-        if rec.split(':', 1)[0] == u'Год':
-            mi.year = rec.split(':', 1)[1]
-
-        if rec.split(':', 1)[0] == u'Страна':
-            mi.country = rec.split(':', 1)[1]
-
-        if rec.split(':', 1)[0] == u'Жанр':
-            mi.genre = rec.split(':', 1)[1]
-
-        if rec.split(':', 1)[0] == u'Режиссер':
-            mi.director = rec.split(':', 1)[1]
-
-        if rec.split(':', 1)[0] == u'В главных ролях':
-            mi.artist = rec.split(':', 1)[1]
-
-        if rec.split(':', 1)[0] == u'О фильме':
-            mi.text = rec.split(':', 1)[1]
-
-        if rec.split(':', 1)[0] == u'Продолжительность':
-            mi.duration = rec.split(':', 1)[1].split(u'мин.')[0]
-
-        if rec.split(':', 1)[0] == u'Рейтинг IMDB':
-            mi.rating = rec.split(':', 1)[1].split('(')[0]
-
-        #------------------------------------------------------
-        if rec.split(':', 1)[0] == u'Сценарий':
-            mi.text += '\n'+ rec
-
-        if rec.split(':', 1)[0] == u'Продюсер':
-            mi.text += '\n'+ rec
-
-        if rec.split(':', 1)[0] == u'Оператор':
-            mi.text += '\n'+ rec
-
-        if rec.split(':', 1)[0] == u'Композитор':
-            mi.text += '\n'+ rec
-
-        if rec.split(':', 1)[0] == u'Бюджет':
-            mi.text += '\n'+ rec
-
-        if rec.split(':', 1)[0] == u'Премьера (мир)':
-            mi.text += '\n'+ rec
-
-    # -- get trailer
-    try:
-        s_url = re.compile('<!--dle_video_begin:(.+?)-->', re.MULTILINE|re.DOTALL).findall(html)[0]
-        s_title = '[COLOR FFFF4000]Трейлер:[/COLOR]'
-
+    #get source info
+    #we can display mp4 and flv sources; for now keeping only 1
+    source_number = 1
+    iframe = soup.find('iframe')
+    if (iframe is not None) and ('video_ext.php' in iframe['src']):
+        s_url = iframe['src']            
+        s_title = '[COLOR FF00FF00] ([/COLOR][COLOR FF00FFFF]ВКонтакте[/COLOR][COLOR FF00FF00])[/COLOR]'
+        i = xbmcgui.ListItem(s_title+' '+name, iconImage=img, thumbnailImage=img)
+        u = sys.argv[0] + '?mode=PLAY'
+        u += '&name=%s'%urllib.quote_plus(s_title+' '+name)
+        u += '&url=%s'%urllib.quote_plus(s_url)
+        u += '&img=%s'%urllib.quote_plus(img)
+        u += '&vtype=%s'%urllib.quote_plus('VK')
+        xbmcplugin.addDirectoryItem(h, u, i, False)
+    iframeurl = soup.find('object', {'id':'pl'})
+    if (iframeurl is not None) and (iframeurlis['data'] is not None):
+        html = get_HTML(iframeurl['data'])
+        s_url = re.findall ( '<video width="100%" height="100%" src="(.*?)" type="video/mp4"', html, re.DOTALL)[0]	
+        s_title = '[COLOR FF00FF00]SOURCE #'+str(source_number)+' ([/COLOR][COLOR FF00FFFF].MP4[/COLOR][COLOR FF00FF00])[/COLOR]'
+        source_number = source_number + 1
         #--
         i = xbmcgui.ListItem(s_title+' '+name, iconImage=img, thumbnailImage=img)
         u = sys.argv[0] + '?mode=PLAY'
         u += '&name=%s'%urllib.quote_plus(s_title+' '+name)
         u += '&url=%s'%urllib.quote_plus(s_url)
         u += '&img=%s'%urllib.quote_plus(img)
+        u += '&par_url=%s'%urllib.quote_plus(url)
         u += '&vtype=%s'%urllib.quote_plus('MP4')
         try:
             i.setInfo(type='video', infoLabels={'title':            mi.title,
-                                                'originaltitle':    mi.orig,
-                        						'year':             int(mi.year),
-                        						'director':         mi.director,
-                                                'artist':           mi.artist,
-                        						'plot':             mi.text,
-                        						'country':          mi.country,
-                        						'genre':            mi.genre,
-                                                'rating':           float(mi.rating)
-                                                })
-        except:
-            pass
-        #i.setProperty('fanart_image', img)
-        xbmcplugin.addDirectoryItem(h, u, i, False)
-    except:
-        pass
-
-    #get source info
-    source_number = 1
-
-    for rec in soup.findAll('iframe', {'src' : re.compile('video_ext.php\?')}):
-        s_url   = rec['src']
-        s_title = '[COLOR FF00FF00]SOURCE #'+str(source_number)+' ([/COLOR][COLOR FF00FFFF]ВКонтакте[/COLOR][COLOR FF00FF00])[/COLOR]'
-        source_number = source_number + 1
-        #--
-        i = xbmcgui.ListItem(s_title+' '+name, iconImage=img, thumbnailImage=img)
-        u = sys.argv[0] + '?mode=PLAY'
-        u += '&name=%s'%urllib.quote_plus(s_title+' '+name)
-        u += '&url=%s'%urllib.quote_plus(s_url)
-        u += '&img=%s'%urllib.quote_plus(img)
-        u += '&par_url=%s'%urllib.quote_plus(url)
-        u += '&vtype=%s'%urllib.quote_plus('VK')
-        try:
-            i.setInfo(type='video', infoLabels={'title':            mi.title,
-                                                'originaltitle':    mi.orig,
-                        						'year':             int(mi.year),
-                        						'director':         mi.director,
-                                                'artist':           mi.artist,
-                        						'plot':             mi.text,
-                        						'country':          mi.country,
-                        						'genre':            mi.genre,
-                                                'rating':           float(mi.rating),
-                                                'duration':         mi.duration
-                                                })
-        except:
-            pass
-        #i.setProperty('fanart_image', img)
-        xbmcplugin.addDirectoryItem(h, u, i, False)
-
-    for rec in soup.findAll('param', {'name':'flashvars'}):
-        for s in rec['value'].split('&'):
-            if s.split('=',1)[0] == 'file':
-                s_url = s.split('=',1)[1]
-        s_title = '[COLOR FF00FF00]SOURCE #'+str(source_number)+' ([/COLOR][COLOR FFFF00FF]RuVideo[/COLOR][COLOR FF00FF00])[/COLOR]'
-        source_number = source_number + 1
-        #--
-        i = xbmcgui.ListItem(s_title+' '+name, iconImage=img, thumbnailImage=img)
-        u = sys.argv[0] + '?mode=PLAY'
-        u += '&name=%s'%urllib.quote_plus(s_title+' '+name)
-        u += '&url=%s'%urllib.quote_plus(s_url)
-        u += '&img=%s'%urllib.quote_plus(img)
-        u += '&par_url=%s'%urllib.quote_plus(url)
-        u += '&vtype=%s'%urllib.quote_plus('RV')
-        try:
-            i.setInfo(type='video', infoLabels={'title':            mi.title,
-                                                'originaltitle':    mi.orig,
-                        						'year':             int(mi.year),
-                        						'director':         mi.director,
-                                                'artist':           mi.artist,
-                        						'plot':             mi.text,
-                        						'country':          mi.country,
-                        						'genre':            mi.genre,
-                                                'rating':           float(mi.rating),
-                                                'duration':         mi.duration
+                                                'year':             int(mi.year),
+                                                'plot':             mi.text,
+                                                'genre':            mi.genre
                                                 })
         except:
             pass
