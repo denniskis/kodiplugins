@@ -338,18 +338,17 @@ def Movie_Search(params):
         # -- add header info
         Get_Header(par)
         #!this is not working and needs to be changed!
-        for rec in soup.find('div',{'id':'searchText'}).split('br'):
+        for rec in soup.find('div',{'id':'searchText'}).findAll('div'):
             try:
-                for rec in soup.find('div',{'id':'searchText'}).findAll('div'):
-                    if rec['class'] == 'mat-img':
-                        mi.img      = rec.find('img')['src']
-                        #extract url from img also
-                        mi.url      = rec.find('a')['href']
-                    if rec['class'] == 'mat-title':
-                        mi.title = rec.find('a').text.encode('utf-8')
-                    if rec['class'] == 'mat-txt':
-                        mi.text = rec.text.encode('utf-8')
-
+                if rec['class'] == 'mat-img':
+                    mi.img      = rec.find('img')['src']
+                    #extract url from img also
+                    mi.url      = rec.find('a')['href']
+                if rec['class'] == 'mat-title':
+                    mi.title = rec.find('a').text.encode('utf-8')
+                if rec['class'] == 'mat-txt':
+                    mi.text = rec.text.encode('utf-8')
+                if mi.img != '' and mi.url != '' and mi.title != '' and mi.text != '':
                     i = xbmcgui.ListItem(mi.title, iconImage=mi.img, thumbnailImage=mi.img)
                     u = sys.argv[0] + '?mode=SOURCE'
                     u += '&name=%s'%urllib.quote_plus(mi.title)
@@ -359,6 +358,8 @@ def Movie_Search(params):
                                                         'plot':        mi.text
                                                         })
                     xbmcplugin.addDirectoryItem(h, u, i, True)
+                    mi.img, mi.url, mi.title, mi.text = '','','',''
+                    
             except:
                 pass
 
