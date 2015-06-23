@@ -1,23 +1,8 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 #/*
-# *      Copyright (C) 2015 Velesik
-# *
-# *
-# *  This Program is free software; you can redistribute it and/or modify
-# *  it under the terms of the GNU General Public License as published by
-# *  the Free Software Foundation; either version 2, or (at your option)
-# *  any later version.
-# *
-# *  This Program is distributed in the hope that it will be useful,
-# *  but WITHOUT ANY WARRANTY; without even the implied warranty of
-# *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-# *  GNU General Public License for more details.
-# *
-# *  You should have received a copy of the GNU General Public License
-# *  along with this program; see the file COPYING.  If not, write to
-# *  the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.
-# *  http://www.gnu.org/copyleft/gpl.html
+# *     Author: velesiK
+#/*     Year: 2015
 # */
 import re, os, urllib, urllib2, cookielib, time
 from time import gmtime, strftime
@@ -273,8 +258,6 @@ def Movie_List(params):
                 #--
                 mi.url      = rec.find('div', {'class':'mat-title'}).find('a')['href']
                 mi.title    = rec.find('div', {'class':'mat-title'}).text.encode('utf-8')
-                #--
-                #xbmc.log(str( rec.find('div', {'class':'mat-img'}).find('img')['src'] ))
                 mi.img      = rec.find('div', {'class':'mat-img'}).find('img')['src']
                 #--
                 for r in rec.find('div', {'class':'mat-txt'}).findAll('p'):
@@ -289,10 +272,10 @@ def Movie_List(params):
                 u += '&url=%s'%urllib.quote_plus(mi.url)
                 u += '&img=%s'%urllib.quote_plus(mi.img)
                 i.setInfo(type='video', infoLabels={ 'title':      mi.title,
-                            						'year':        mi.year,
-                            						'plot':        mi.text,
-                            						'country':     mi.country,
-                            						'genre':       mi.genre})
+                                                    'year':        mi.year,
+                                                    'plot':        mi.text,
+                                                    'country':     mi.country,
+                                                    'genre':       mi.genre})
                 xbmcplugin.addDirectoryItem(h, u, i, True)
             except:
                 pass
@@ -632,20 +615,20 @@ def get_url(url):
 
 #-------------------------------------------------------------------------------
 def get_params(paramstring):
-	param=[]
-	if len(paramstring)>=2:
-		params=paramstring
-		cleanedparams=params.replace('?','')
-		if (params[len(params)-1]=='/'):
-			params=params[0:len(params)-2]
-		pairsofparams=cleanedparams.split('&')
-		param={}
-		for i in range(len(pairsofparams)):
-			splitparams={}
-			splitparams=pairsofparams[i].split('=')
-			if (len(splitparams))==2:
-				param[splitparams[0]]=splitparams[1]
-	return param
+    param=[]
+    if len(paramstring)>=2:
+        params=paramstring
+        cleanedparams=params.replace('?','')
+        if (params[len(params)-1]=='/'):
+            params=params[0:len(params)-2]
+        pairsofparams=cleanedparams.split('&')
+        param={}
+        for i in range(len(pairsofparams)):
+            splitparams={}
+            splitparams=pairsofparams[i].split('=')
+            if (len(splitparams))==2:
+                param[splitparams[0]]=splitparams[1]
+    return param
 #-------------------------------------------------------------------------------
 params=get_params(sys.argv[2])
 
@@ -661,21 +644,21 @@ mi = Info()
 mode = None
 
 try:
-	mode = urllib.unquote_plus(params['mode'])
+    mode = urllib.unquote_plus(params['mode'])
 except:
-	Movie_List(params)
+    Movie_List(params)
 
 if mode == 'MOVIE':
-	Movie_List(params)
+    Movie_List(params)
 elif mode == 'SEARCH':
-	Movie_Search(params)
+    Movie_Search(params)
 elif mode == 'SOURCE':
-	Source_List(params)
+    Source_List(params)
 elif mode == 'GENRES':
     Genre_List(params)
 elif mode == 'EMPTY':
     Empty()
 elif mode == 'PLAY':
-	PLAY(params)
+    PLAY(params)
 
 
