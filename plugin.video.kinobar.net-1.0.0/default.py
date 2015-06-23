@@ -355,32 +355,27 @@ def Movie_Search(params):
         # -- add header info
         Get_Header(par)
         #!this is not working and needs to be changed!
-        for rec in soup.find('div',{'id':'allEntries'}).findAll('div', {'id':re.compile('entryID*')}):
+        for rec in soup.find('div',{'id':'searchText'}).split('br'):
             try:
-                #--
-                mi.url      = rec.find('div', {'class':'mat-title'}).find('a')['href']
-                mi.title    = rec.find('div', {'class':'mat-title'}).text.encode('utf-8')
-                #--
-                #xbmc.log(str( rec.find('div', {'class':'mat-img'}).find('img')['src'] ))
-                mi.img      = rec.find('div', {'class':'mat-img'}).find('img')['src']
-                #--
-                for r in rec.find('div', {'class':'mat-txt'}).findAll('p'):
-                    if u'Год:' in r.text:
-                        mi.year = int(re.findall(r'\d+',r.text)[0])
-                    if u'Страна:' in r.text:
-                        mi.country = r.text.split(':')[1].encode('utf-8')
-                    mi.text = r.text.encode('utf-8')
-                i = xbmcgui.ListItem(mi.title, iconImage=mi.img, thumbnailImage=mi.img)
-                u = sys.argv[0] + '?mode=SOURCE'
-                u += '&name=%s'%urllib.quote_plus(mi.title)
-                u += '&url=%s'%urllib.quote_plus(mi.url)
-                u += '&img=%s'%urllib.quote_plus(mi.img)
-                i.setInfo(type='video', infoLabels={ 'title':      mi.title,
-                            						'year':        mi.year,
-                            						'plot':        mi.text,
-                            						'country':     mi.country,
-                            						'genre':       mi.genre})
-                xbmcplugin.addDirectoryItem(h, u, i, True)
+                for rec in soup.find('div',{'id':'searchText'}).findAll('div'):
+                    if rec['class'] == 'mat-img':
+                        mi.img      = rec.find('img')['src']
+                        #extract url from img also
+                        mi.url      = rec.find('a')['href']
+                    if rec['class'] == 'mat-title':
+                        mi.title = rec.find('a').text.encode('utf-8')
+                    if rec['class'] == 'mat-txt':
+                        mi.text = rec.text.encode('utf-8')
+
+                    i = xbmcgui.ListItem(mi.title, iconImage=mi.img, thumbnailImage=mi.img)
+                    u = sys.argv[0] + '?mode=SOURCE'
+                    u += '&name=%s'%urllib.quote_plus(mi.title)
+                    u += '&url=%s'%urllib.quote_plus(mi.url)
+                    u += '&img=%s'%urllib.quote_plus(mi.img)
+                    i.setInfo(type='video', infoLabels={ 'title':      mi.title,
+                                                        'plot':        mi.text
+                                                        })
+                    xbmcplugin.addDirectoryItem(h, u, i, True)
             except:
                 pass
 
@@ -422,23 +417,36 @@ def Source_List(params):
             u += '&vtype=%s'%urllib.quote_plus('VK')
             xbmcplugin.addDirectoryItem(h, u, i, False)
         else:
-            html = get_HTML(iframe['src'])
-            s_url = re.findall ( '<video width="100%" height="100%" src="(.*?)" type="video/mp4"', html, re.DOTALL)[0]	
-            s_title = '[COLOR FF00FF00]SOURCE #'+str(source_number)+' ([/COLOR][COLOR FF00FFFF].MP4[/COLOR][COLOR FF00FF00])[/COLOR]'
-            source_number = source_number + 1
-            i = xbmcgui.ListItem(s_title+' '+name, iconImage=img, thumbnailImage=img)
-            u = sys.argv[0] + '?mode=PLAY'
-            u += '&name=%s'%urllib.quote_plus(s_title+' '+name)
-            u += '&url=%s'%urllib.quote_plus(s_url)
-            u += '&img=%s'%urllib.quote_plus(img)
-            u += '&vtype=%s'%urllib.quote_plus('MP4')
-            xbmcplugin.addDirectoryItem(h, u, i, False)
+            serii = soup.find('div', {'id':'serii'})
+            if serii is not None:
+                for r in serii.findAll('a'):
+                    html = get_HTML(r['id'])
+                    s_url = re.findall ( '<video width="100%" height="100%" src="(.*?)" type="video/mp4"', html, re.DOTALL)[0]	
+                    s_title = '[COLOR FF00FF00] '+r.text.encode('utf-8')+' ([/COLOR][COLOR FF00FFFF].MP4[/COLOR][COLOR FF00FF00])[/COLOR]'
+                    i = xbmcgui.ListItem(s_title+' '+name, iconImage=img, thumbnailImage=img)
+                    u = sys.argv[0] + '?mode=PLAY'
+                    u += '&name=%s'%urllib.quote_plus(s_title+' '+name)
+                    u += '&url=%s'%urllib.quote_plus(s_url)
+                    u += '&img=%s'%urllib.quote_plus(img)
+                    u += '&vtype=%s'%urllib.quote_plus('MP4')
+                    xbmcplugin.addDirectoryItem(h, u, i, False)
+            else:
+                html = get_HTML(iframe['src'])
+                s_url = re.findall ( '<video width="100%" height="100%" src="(.*?)" type="video/mp4"', html, re.DOTALL)[0]	
+                s_title = '[COLOR FF00FF00]'+s_url.split('/')[-1]+' ([/COLOR][COLOR FF00FFFF][/COLOR][COLOR FF00FF00])[/COLOR]'
+                source_number = source_number + 1
+                i = xbmcgui.ListItem(s_title+' '+name, iconImage=img, thumbnailImage=img)
+                u = sys.argv[0] + '?mode=PLAY'
+                u += '&name=%s'%urllib.quote_plus(s_title+' '+name)
+                u += '&url=%s'%urllib.quote_plus(s_url)
+                u += '&img=%s'%urllib.quote_plus(img)
+                u += '&vtype=%s'%urllib.quote_plus('MP4')
+                xbmcplugin.addDirectoryItem(h, u, i, False)
     iframeurl = soup.find('object', {'id':'pl'})
     if (iframeurl is not None) and (iframeurl['data'] is not None):
         html = get_HTML(iframeurl['data'])
         s_url = re.findall ( '<video width="100%" height="100%" src="(.*?)" type="video/mp4"', html, re.DOTALL)[0]	
-        s_title = '[COLOR FF00FF00]SOURCE #'+str(source_number)+' ([/COLOR][COLOR FF00FFFF].MP4[/COLOR][COLOR FF00FF00])[/COLOR]'
-        source_number = source_number + 1
+        s_title = '[COLOR FF00FF00]SOURCE #'+s_url.split('/')[-1]+' ([/COLOR][COLOR FF00FFFF].MP4[/COLOR][COLOR FF00FF00])[/COLOR]'
         #--
         i = xbmcgui.ListItem(s_title+' '+name, iconImage=img, thumbnailImage=img)
         u = sys.argv[0] + '?mode=PLAY'

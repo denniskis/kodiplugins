@@ -294,24 +294,14 @@ def Source_List(params):
     xbmcplugin.endOfDirectory(h)
 
 #url = 'http://kinobar.net/news/bandy_nju_jorka/2013-06-19-2317'
-url = 'http://kinobar.net/news/vragi_sredi_nas_film_2010/2012-08-12-87'
+url = 'http://kinobar.net/news/poslanniki/2015-06-23-5471'
 html = get_HTML(url)
 soup = BeautifulSoup(html)
 mi = Info()
-for rec in soup.find('div', {'id':'traf-zona'}).findAll('p'):
-    if u'Название' in rec.text:
-        mi.title = rec.text.split(':',1)[1]
-    if u'Год' in rec.text:
-        mi.year = rec.text.split(':', 1)[1]
-    if u'Жанр' in rec.text:
-        mi.genre = rec.text.split(':', 1)[1]
-try:
-    mi.text = soup.find('div', {'id':'traf-zona'}).find('span', {'itemprop':'description'}).text
-except:
-    mi.text = soup.find('div', {'id':'traf-zona'}).text
-iframe = soup.find('iframe')
-print iframe
-iframeurl = soup.find('object', {'id':'pl'})
-#if (iframeurl is not None) and (iframeurlis['data'] is not None):
-    #html = get_HTML(iframeurl['data'])
-    #m = re.findall ( '<video width="100%" height="100%" src="(.*?)" type="video/mp4"', html, re.DOTALL)[0]    
+serii = soup.find('div', {'id':'serii'})
+if serii is not None:
+    for r in serii.findAll('a'):
+        html = get_HTML(r['id'])
+        s_url = re.findall ( '<video width="100%" height="100%" src="(.*?)" type="video/mp4"', html, re.DOTALL)[0]
+        print s_url.split('/')[-1]
+        print r.text.encode('utf-8')
