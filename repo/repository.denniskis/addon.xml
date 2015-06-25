@@ -1,28 +1,11 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<addons>
-<addon id="plugin.video.kinobar.net"
-       name="[COLOR FF00FF00]Кино портал ([/COLOR][COLOR FFFFF000]kinobar.net[/COLOR][COLOR FF00FF00])[/COLOR]"
-       version="1.0.0"
-       provider-name="Veselik">
-  <requires>
-    <import addon="xbmc.python" version="2.1.0"/>
-  </requires>
-  <extension point="xbmc.python.pluginsource"
-             provides="video"
-             library="default.py">
-    <provides>video</provides>
-  </extension>
-  <extension point="xbmc.addon.metadata">
-    <summary>kinobar.net</summary>
-    <description>Фильмы и сериалы онлайн.</description>
-    <platform>all</platform>
-  </extension>
-</addon>
-
-<addon id="repository.denniskis"
-       name="denniskis Kodi Add-ons"
-	   version="1.0.0"
+<addon id="repository.denniskis" 
+       name="denniskis Kodi Add-ons" 
+	   version="1.0.0" 
 	   provider-name="denniskis">
+<requires>
+  <import addon="xbmc.addon" version="12.0.0"/>
+</requires>	
 	<extension point="xbmc.addon.repository" name="denniskis Kodi Add-ons">
 		<info compressed="false">https://github.com/denniskis/kodiplugins/raw/master/addons.xml</info>
 		<checksum>https://github.com/denniskis/kodiplugins/raw/master/addons.xml.md5</checksum>
@@ -38,4 +21,3 @@
 		<platform>all</platform>
 	</extension>
 </addon>
-</addons>
