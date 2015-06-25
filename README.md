@@ -1,7 +1,7 @@
 Kodi addons.
 Аддоны для медиацентра Kodi/XBMC.
 
-Для установки скачайте https://github.com/denniskis/kodiplugins/archive/master.zip 
+Для установки скачайте https://github.com/denniskis/kodiplugins/raw/master/repository.denniskis.zip  
 Далее =>
 Открыв XBMC или Kodi идём в "Система(Настройки) -> Дополнения" -> воспользоваться пунктом "Установить из .zip файла" 
 
