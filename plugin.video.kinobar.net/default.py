@@ -45,6 +45,7 @@ class Param:
     url         = ''
     search      = ''
     par_url     = ''
+    new         = ''
 
 class Info:
     img         = ''
@@ -117,6 +118,9 @@ def Get_Parameters(params):
     #-- par_url
     try:    p.par_url = urllib.unquote_plus(params['par_url'])
     except: p.par_url = ''
+    #-- new
+    try:    p.new = urllib.unquote_plus(params['new'])
+    except: p.new = ''
 
     #-----
     return p
@@ -199,6 +203,13 @@ def Get_Header(par):
         name    = '[COLOR FFFFFF00]' + '[ПОИСК]' + '[/COLOR]'
         i = xbmcgui.ListItem(name, iconImage=icon, thumbnailImage=icon)
         u = sys.argv[0] + '?mode=SEARCH'
+        #-- filter parameters
+        u += '&search=%s'%urllib.quote_plus('Y')
+        xbmcplugin.addDirectoryItem(h, u, i, True)
+        
+        name    = '[COLOR FFFFFF00]' + '[НОВИНКИ]' + '[/COLOR]'
+        i = xbmcgui.ListItem(name, iconImage=icon, thumbnailImage=icon)
+        u = sys.argv[0] + '?mode=NEW'
         #-- filter parameters
         u += '&search=%s'%urllib.quote_plus('Y')
         xbmcplugin.addDirectoryItem(h, u, i, True)
@@ -605,7 +616,7 @@ try:
 except:
     Movie_List(params)
 
-if mode == 'MOVIE':
+if mode == 'MOVIE' or mode == 'NEW':
     Movie_List(params)
 elif mode == 'SEARCH':
     Movie_Search(params)
