@@ -318,13 +318,14 @@ def Movie_Search(params):
             skbd.setHeading('Поиск фильмов.')
             skbd.doModal()
             if skbd.isConfirmed():
+                xbmc.log(str(skbd.getText()))
                 SearchStr = skbd.getText().split(':')
                 par.search = SearchStr[0]
             else:
                 return False
         #-- get search url
         
-        url = 'http://kinobar.net/search/?q=' + par.search
+        url = 'http://kinobar.net/search/?q=' + urllib.quote_plus(par.search)
         
         #== get movie list =====================================================
         html = get_HTML(url) 
@@ -412,38 +413,55 @@ def Source_List(params):
                     xbmcplugin.addDirectoryItem(h, u, i, False)
             else:
                 html = get_HTML(iframe['src'])
-                s_url = re.findall ( '<video width="100%" height="100%" src="(.*?)" type="video/mp4"', html, re.DOTALL)[0]	
-                s_title = '[COLOR FF00FF00]'+s_url.split('/')[-1]+' ([/COLOR][COLOR FF00FFFF][/COLOR][COLOR FF00FF00])[/COLOR]'
-                source_number = source_number + 1
+                s_url = re.findall ( '<video width="100%" height="100%" src="(.*?)" type="video/mp4"', html, re.DOTALL)[0]
+                flv_url = re.findall ( 'file : \'(.*?)\',', html, re.DOTALL)[0]
+                xbmc.log("flv_url")
+                xbmc.log(flv_url)
+                s_title = '[COLOR FF00FF00]'+s_url.split('/')[-1]+'([/COLOR][COLOR FF00FFFF]*mp4*[/COLOR][COLOR FF00FF00])[/COLOR]'
+                s_flv_title = '[COLOR FF00FF00]'+flv_url.split('/')[-1]+'([/COLOR][COLOR FF00FFFF] *flv*[/COLOR][COLOR FF00FF00])[/COLOR]'
                 i = xbmcgui.ListItem(s_title+' '+name, iconImage=img, thumbnailImage=img)
+                i_flv = xbmcgui.ListItem(s_flv_title+' '+name, iconImage=img, thumbnailImage=img)
                 u = sys.argv[0] + '?mode=PLAY'
                 u += '&name=%s'%urllib.quote_plus(s_title+' '+name)
-                u += '&url=%s'%urllib.quote_plus(s_url)
                 u += '&img=%s'%urllib.quote_plus(img)
                 u += '&vtype=%s'%urllib.quote_plus('MP4')
+                flv_u = u
+                u += '&url=%s'%urllib.quote_plus(s_url)
+                flv_u += '&url=%s'%urllib.quote_plus(flv_url)
                 xbmcplugin.addDirectoryItem(h, u, i, False)
+                xbmcplugin.addDirectoryItem(h, flv_u, i_flv, False)
     iframeurl = soup.find('object', {'id':'pl'})
     if (iframeurl is not None) and (iframeurl['data'] is not None):
         html = get_HTML(iframeurl['data'])
         s_url = re.findall ( '<video width="100%" height="100%" src="(.*?)" type="video/mp4"', html, re.DOTALL)[0]	
-        s_title = '[COLOR FF00FF00]SOURCE #'+s_url.split('/')[-1]+' ([/COLOR][COLOR FF00FFFF].MP4[/COLOR][COLOR FF00FF00])[/COLOR]'
+        s_title = '[COLOR FF00FF00]'+s_url.split('/')[-1]+' ([/COLOR][COLOR FF00FFFF]*mp4*[/COLOR][COLOR FF00FF00])[/COLOR]'
         #--
+        flv_url = re.findall ( 'file : \'(.*?)\',', html, re.DOTALL)[0]
+        s_flv_title = '[COLOR FF00FF00]'+flv_url.split('/')[-1]+' ([/COLOR][COLOR FF00FFFF]*flv*[/COLOR][COLOR FF00FF00])[/COLOR]'
         i = xbmcgui.ListItem(s_title+' '+name, iconImage=img, thumbnailImage=img)
+        i_flv = xbmcgui.ListItem(s_flv_title+' '+name, iconImage=img, thumbnailImage=img)
         u = sys.argv[0] + '?mode=PLAY'
         u += '&name=%s'%urllib.quote_plus(s_title+' '+name)
-        u += '&url=%s'%urllib.quote_plus(s_url)
         u += '&img=%s'%urllib.quote_plus(img)
         u += '&par_url=%s'%urllib.quote_plus(url)
         u += '&vtype=%s'%urllib.quote_plus('MP4')
+        flv_u = u
+        flv_u += '&url=%s'%urllib.quote_plus(flv_url)
+        u += '&url=%s'%urllib.quote_plus(s_url)
         try:
             i.setInfo(type='video', infoLabels={'title':            mi.title,
                                                 'year':             int(mi.year),
-                                                'plot':             mi.text,
-                                                'genre':            mi.genre
+                                                'plot':             mi.text
                                                 })
+            i_flv.setInfo(type='video', infoLabels={'title':            mi.title,
+                                                'year':             int(mi.year),
+                                                'plot':             mi.text
+                                                })
+            
         except:
             pass
         xbmcplugin.addDirectoryItem(h, u, i, False)
+        xbmcplugin.addDirectoryItem(h, flv_u, i_flv, False)
 
     xbmcplugin.endOfDirectory(h)
 
