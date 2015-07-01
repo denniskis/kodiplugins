@@ -2,7 +2,7 @@
 <addons>
 <addon id="plugin.video.kinobar.net"
        name="[COLOR FF00FF00]Кино портал ([/COLOR][COLOR FFFFF000]kinobar.net[/COLOR][COLOR FF00FF00])[/COLOR]"
-       version="1.0.1"
+       version="1.0.2"
        provider-name="Veselik">
   <requires>
     <import addon="xbmc.python" version="2.1.0"/>

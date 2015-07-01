@@ -161,36 +161,23 @@ def Get_Page_and_Movies_Count(par):
 
 #----------- get Header string -------------------------------------------------
 def Get_Header(par):
+    #if we are in new films mode then we don't need header
+    if mode != 'NEW':
+        info  = 'Фильмов: ' + '[COLOR FF00FF00]' + str(par.count) + '[/COLOR]'
+    
+        if par.max_page > 1:
+            info += ' | Pages: ' + '[COLOR FF00FF00]'+ par.page + '/' + str(par.max_page) +'[/COLOR]'
 
-    info  = 'Фильмов: ' + '[COLOR FF00FF00]' + str(par.count) + '[/COLOR]'
+        if par.genre <> '':
+            info += ' | Жанр: ' + '[COLOR FF00FFF0]'+ par.genre_name + '[/COLOR]'
 
-    if par.max_page > 1:
-        info += ' | Pages: ' + '[COLOR FF00FF00]'+ par.page + '/' + str(par.max_page) +'[/COLOR]'
-
-    if par.genre <> '':
-        info += ' | Жанр: ' + '[COLOR FF00FFF0]'+ par.genre_name + '[/COLOR]'
-
-    if par.search <> '':
-        info  += ' | Поиск: ' + '[COLOR FFFFFF00]'+ par.search +'[/COLOR]'
-
-    #-- info line
-    name    = info
-    i = xbmcgui.ListItem(name, iconImage=icon, thumbnailImage=icon)
-    u = sys.argv[0] + '?mode=EMPTY'
-    u += '&name=%s'%urllib.quote_plus(name)
-    #-- filter parameters
-    u += '&page=%s'%urllib.quote_plus(par.page)
-    u += '&genre=%s'%urllib.quote_plus(par.genre)
-    u += '&genre_name=%s'%urllib.quote_plus(par.genre_name)
-    u += '&max_page=%s'%urllib.quote_plus(str(par.max_page))
-    u += '&count=%s'%urllib.quote_plus(str(par.count))
-    xbmcplugin.addDirectoryItem(h, u, i, True)
-
-    #-- genres & search
-    if par.genre == '' and par.search == '' and par.page == '1':
-        name    = '[COLOR FF00FFF0][Жанры][/COLOR]'
+        if par.search <> '':
+            info  += ' | Поиск: ' + '[COLOR FFFFFF00]'+ par.search +'[/COLOR]'
+            
+        #-- info line
+        name  = info
         i = xbmcgui.ListItem(name, iconImage=icon, thumbnailImage=icon)
-        u = sys.argv[0] + '?mode=GENRES'
+        u = sys.argv[0] + '?mode=EMPTY'
         u += '&name=%s'%urllib.quote_plus(name)
         #-- filter parameters
         u += '&page=%s'%urllib.quote_plus(par.page)
@@ -200,207 +187,221 @@ def Get_Header(par):
         u += '&count=%s'%urllib.quote_plus(str(par.count))
         xbmcplugin.addDirectoryItem(h, u, i, True)
 
-        name    = '[COLOR FFFFFF00]' + '[ПОИСК]' + '[/COLOR]'
-        i = xbmcgui.ListItem(name, iconImage=icon, thumbnailImage=icon)
-        u = sys.argv[0] + '?mode=SEARCH'
-        #-- filter parameters
-        u += '&search=%s'%urllib.quote_plus('Y')
-        xbmcplugin.addDirectoryItem(h, u, i, True)
-        
-        name    = '[COLOR FFFFFF00]' + '[НОВИНКИ]' + '[/COLOR]'
-        i = xbmcgui.ListItem(name, iconImage=icon, thumbnailImage=icon)
-        u = sys.argv[0] + '?mode=NEW'
-        xbmcplugin.addDirectoryItem(h, u, i, True)
+        #-- genres & search
+        if par.genre == '' and par.search == '' and par.page == '1':
+            name    = '[COLOR FF00FFF0][Жанры][/COLOR]'
+            i = xbmcgui.ListItem(name, iconImage=icon, thumbnailImage=icon)
+            u = sys.argv[0] + '?mode=GENRES'
+            u += '&name=%s'%urllib.quote_plus(name)
+            #-- filter parameters
+            u += '&page=%s'%urllib.quote_plus(par.page)
+            u += '&genre=%s'%urllib.quote_plus(par.genre)
+            u += '&genre_name=%s'%urllib.quote_plus(par.genre_name)
+            u += '&max_page=%s'%urllib.quote_plus(str(par.max_page))
+            u += '&count=%s'%urllib.quote_plus(str(par.count))
+            xbmcplugin.addDirectoryItem(h, u, i, True)
 
-    #-- previous page
-    if int(par.page) > 1 and par.search == '':
-        name    = '[COLOR FF00FF00][PAGE -1][/COLOR]'
-        i = xbmcgui.ListItem(name, iconImage=icon, thumbnailImage=icon)
-        u = sys.argv[0] + '?mode=MOVIE'
-        u += '&name=%s'%urllib.quote_plus(name)
-        #-- filter parameters
-        u += '&page=%s'%urllib.quote_plus(str(int(par.page)-1))
-        u += '&genre=%s'%urllib.quote_plus(par.genre)
-        u += '&genre_name=%s'%urllib.quote_plus(par.genre_name)
-        u += '&max_page=%s'%urllib.quote_plus(str(par.max_page))
-        u += '&count=%s'%urllib.quote_plus(str(par.count))
-        xbmcplugin.addDirectoryItem(h, u, i, True)
+            name    = '[COLOR FFFFFF00]' + '[ПОИСК]' + '[/COLOR]'
+            i = xbmcgui.ListItem(name, iconImage=icon, thumbnailImage=icon)
+            u = sys.argv[0] + '?mode=SEARCH'
+            #-- filter parameters
+            u += '&search=%s'%urllib.quote_plus('Y')
+            xbmcplugin.addDirectoryItem(h, u, i, True)
+            
+            name    = '[COLOR FFFFFF00]' + '[НОВИНКИ]' + '[/COLOR]'
+            i = xbmcgui.ListItem(name, iconImage=icon, thumbnailImage=icon)
+            u = sys.argv[0] + '?mode=NEW'
+            xbmcplugin.addDirectoryItem(h, u, i, True)
 
-    #-- previous page
-    if int(par.page) >= 10 and par.search == '':
-        name    = '[COLOR FF00FF00][PAGE -10][/COLOR]'
-        i = xbmcgui.ListItem(name, iconImage=icon, thumbnailImage=icon)
-        u = sys.argv[0] + '?mode=MOVIE'
-        u += '&name=%s'%urllib.quote_plus(name)
-        #-- filter parameters
-        u += '&page=%s'%urllib.quote_plus(str(int(par.page)-10))
-        u += '&genre=%s'%urllib.quote_plus(par.genre)
-        u += '&genre_name=%s'%urllib.quote_plus(par.genre_name)
-        u += '&max_page=%s'%urllib.quote_plus(str(par.max_page))
-        u += '&count=%s'%urllib.quote_plus(str(par.count))
-        xbmcplugin.addDirectoryItem(h, u, i, True)
+        #-- previous page
+        if int(par.page) > 1 and par.search == '':
+            name    = '[COLOR FF00FF00][PAGE -1][/COLOR]'
+            i = xbmcgui.ListItem(name, iconImage=icon, thumbnailImage=icon)
+            u = sys.argv[0] + '?mode=MOVIE'
+            u += '&name=%s'%urllib.quote_plus(name)
+            #-- filter parameters
+            u += '&page=%s'%urllib.quote_plus(str(int(par.page)-1))
+            u += '&genre=%s'%urllib.quote_plus(par.genre)
+            u += '&genre_name=%s'%urllib.quote_plus(par.genre_name)
+            u += '&max_page=%s'%urllib.quote_plus(str(par.max_page))
+            u += '&count=%s'%urllib.quote_plus(str(par.count))
+            xbmcplugin.addDirectoryItem(h, u, i, True)
+
+        #-- previous page
+        if int(par.page) >= 10 and par.search == '':
+            name    = '[COLOR FF00FF00][PAGE -10][/COLOR]'
+            i = xbmcgui.ListItem(name, iconImage=icon, thumbnailImage=icon)
+            u = sys.argv[0] + '?mode=MOVIE'
+            u += '&name=%s'%urllib.quote_plus(name)
+            #-- filter parameters
+            u += '&page=%s'%urllib.quote_plus(str(int(par.page)-10))
+            u += '&genre=%s'%urllib.quote_plus(par.genre)
+            u += '&genre_name=%s'%urllib.quote_plus(par.genre_name)
+            u += '&max_page=%s'%urllib.quote_plus(str(par.max_page))
+            u += '&count=%s'%urllib.quote_plus(str(par.count))
+            xbmcplugin.addDirectoryItem(h, u, i, True)
 
 def Empty():
     return False
 
 #---------- movie list ---------------------------------------------------------
 def Movie_List(params):
-        #-- get filter parameters
-        par = Get_Parameters(params)
+    #-- get filter parameters
+    par = Get_Parameters(params)
 
-        # -- get total number of movies and pages if not provided
-        if par.count == 0:
-            (par.max_page, par.count) = Get_Page_and_Movies_Count(par)
+    # -- get total number of movies and pages if not provided
+    if par.count == 0:
+        (par.max_page, par.count) = Get_Page_and_Movies_Count(par)
 
-        # -- add header info
-        Get_Header(par)
-		#== get movie list =====================================================
-		url = Get_URL(par)
-		html = get_HTML(url)
-        # -- parsing web page --------------------------------------------------
-        soup = BeautifulSoup(html)
-        # -- get movie info
-        
-        for rec in soup.find('div',{'id':'allEntries'}).findAll('div', {'id':re.compile('entryID*')}):
-            try:
-                #--
-                mi.url      = rec.find('div', {'class':'mat-title'}).find('a')['href']
-                mi.title    = rec.find('div', {'class':'mat-title'}).text.encode('utf-8')
-                mi.img      = rec.find('div', {'class':'mat-img'}).find('img')['src']
-                #--
-                for r in rec.find('div', {'class':'mat-txt'}).findAll('p'):
-                    if u'Год:' in r.text:
-                        mi.year = int(re.findall(r'\d+',r.text)[0])
-                    if u'Страна:' in r.text:
-                        mi.country = r.text.split(':')[1].encode('utf-8')
-                    mi.text = r.text.encode('utf-8')
+    # -- add header info
+    Get_Header(par)
+    #== get movie list =====================================================
+    url = Get_URL(par)
+    html = get_HTML(url)
+    # -- parsing web page --------------------------------------------------
+    soup = BeautifulSoup(html)
+    # -- get movie info
+    
+    for rec in soup.find('div',{'id':'allEntries'}).findAll('div', {'id':re.compile('entryID*')}):
+        try:
+            #--
+            mi.url      = rec.find('div', {'class':'mat-title'}).find('a')['href']
+            mi.title    = rec.find('div', {'class':'mat-title'}).text.encode('utf-8')
+            mi.img      = rec.find('div', {'class':'mat-img'}).find('img')['src']
+            #--
+            for r in rec.find('div', {'class':'mat-txt'}).findAll('p'):
+                if u'Год:' in r.text:
+                    mi.year = int(re.findall(r'\d+',r.text)[0])
+                if u'Страна:' in r.text:
+                    mi.country = r.text.split(':')[1].encode('utf-8')
+                mi.text = r.text.encode('utf-8')
+            i = xbmcgui.ListItem(mi.title, iconImage=mi.img, thumbnailImage=mi.img)
+            u = sys.argv[0] + '?mode=SOURCE'
+            u += '&name=%s'%urllib.quote_plus(mi.title)
+            u += '&url=%s'%urllib.quote_plus(mi.url)
+            u += '&img=%s'%urllib.quote_plus(mi.img)
+            i.setInfo(type='video', infoLabels={ 'title':      mi.title,
+                                                'year':        mi.year,
+                                                'plot':        mi.text,
+                                                'country':     mi.country,
+                                                'genre':       mi.genre})
+            xbmcplugin.addDirectoryItem(h, u, i, True)
+        except:
+            pass
+    #-- next page link
+    if int(par.page) < par.max_page :
+        name    = '[COLOR FF00FF00][PAGE +1][/COLOR]'
+        i = xbmcgui.ListItem(name, iconImage=icon, thumbnailImage=icon)
+        u = sys.argv[0] + '?mode=MOVIE'
+        u += '&name=%s'%urllib.quote_plus(name)
+        #-- filter parameters
+        u += '&page=%s'%urllib.quote_plus(str(int(par.page)+1))
+        u += '&genre=%s'%urllib.quote_plus(par.genre)
+        u += '&genre_name=%s'%urllib.quote_plus(par.genre_name)
+        u += '&max_page=%s'%urllib.quote_plus(str(par.max_page))
+        u += '&count=%s'%urllib.quote_plus(str(par.count))
+        xbmcplugin.addDirectoryItem(h, u, i, True)
+
+    if int(par.page)+10 <= par.max_page :
+        name    = '[COLOR FF00FF00][PAGE +10][/COLOR]'
+        i = xbmcgui.ListItem(name, iconImage=icon, thumbnailImage=icon)
+        u = sys.argv[0] + '?mode=MOVIE'
+        u += '&name=%s'%urllib.quote_plus(name)
+        #-- filter parameters
+        u += '&page=%s'%urllib.quote_plus(str(int(par.page)+10))
+        u += '&genre=%s'%urllib.quote_plus(par.genre)
+        u += '&genre_name=%s'%urllib.quote_plus(par.genre_name)
+        u += '&max_page=%s'%urllib.quote_plus(str(par.max_page))
+        u += '&count=%s'%urllib.quote_plus(str(par.count))
+        xbmcplugin.addDirectoryItem(h, u, i, True)
+
+    xbmcplugin.endOfDirectory(h)
+
+#---------- movie list ---------------------------------------------------------
+def New_List(params):
+    #-- get filter parameters
+    par = Get_Parameters(params)
+    # -- add header info
+    Get_Header(par)
+    #== get movie list =====================================================
+    url = 'http://kinobar.net/index/novye_filmy/0-8'
+    html = get_HTML(url)
+    # -- parsing web page --------------------------------------------------
+    soup = BeautifulSoup(html)
+    # -- get movie info
+    
+    for rec in soup.findAll('div',{'class':'mat-images'}):
+        try:
+            mi.url = rec.find('div',{'class':'mat-img'}).a['href']
+            mi.title  = rec.find('div',{'class':'mat-img'}).find('img')['title'].encode('utf-8')
+            mi.img = rec.find('div',{'class':'mat-img'}).find('img')['src']
+
+            i = xbmcgui.ListItem(mi.title, iconImage=mi.img, thumbnailImage=mi.img)
+            u = sys.argv[0] + '?mode=SOURCE'
+            u += '&name=%s'%urllib.quote_plus(mi.title)
+            u += '&url=%s'%urllib.quote_plus(mi.url)
+            u += '&img=%s'%urllib.quote_plus(mi.img)
+            i.setInfo(type='video', infoLabels={ 'title':mi.title})
+            xbmcplugin.addDirectoryItem(h, u, i, True)
+        except:
+            pass
+    
+    xbmcplugin.endOfDirectory(h)
+
+#---------- movie search list --------------------------------------------------
+def Movie_Search(params):
+    #-- get filter parameters
+    par = Get_Parameters(params)
+
+    # show search dialog
+    if par.search == 'Y':
+        skbd = xbmc.Keyboard()
+        skbd.setHeading('Поиск фильмов.')
+        skbd.doModal()
+        if skbd.isConfirmed():
+            xbmc.log(str(skbd.getText()))
+            SearchStr = skbd.getText().split(':')
+            par.search = SearchStr[0]
+        else:
+            return False
+    #-- get search url
+    
+    url = 'http://kinobar.net/search/?q=' + urllib.quote_plus(par.search)
+    
+    #== get movie list =====================================================
+    html = get_HTML(url) 
+    # -- parsing web page ------------------------------------------------------
+    soup = BeautifulSoup(html)
+    
+    # -- add header info
+    Get_Header(par)
+    
+    for rec in soup.find('div',{'id':'searchText'}).findAll('div'):
+        try:
+            if rec['class'] == 'mat-img':
+                mi.img      = rec.find('img')['src']
+                #extract url from img also
+                mi.url      = rec.find('a')['href']
+            if rec['class'] == 'mat-title':
+                mi.title = rec.find('a').text.encode('utf-8')
+            if rec['class'] == 'mat-txt':
+                mi.text = rec.text.encode('utf-8')
+            if mi.img != '' and mi.url != '' and mi.title != '' and mi.text != '':
                 i = xbmcgui.ListItem(mi.title, iconImage=mi.img, thumbnailImage=mi.img)
                 u = sys.argv[0] + '?mode=SOURCE'
                 u += '&name=%s'%urllib.quote_plus(mi.title)
                 u += '&url=%s'%urllib.quote_plus(mi.url)
                 u += '&img=%s'%urllib.quote_plus(mi.img)
                 i.setInfo(type='video', infoLabels={ 'title':      mi.title,
-                                                    'year':        mi.year,
-                                                    'plot':        mi.text,
-                                                    'country':     mi.country,
-                                                    'genre':       mi.genre})
+                                                    'plot':        mi.text
+                                                    })
                 xbmcplugin.addDirectoryItem(h, u, i, True)
-            except:
-                pass
-        #-- next page link
-        if int(par.page) < par.max_page :
-            name    = '[COLOR FF00FF00][PAGE +1][/COLOR]'
-            i = xbmcgui.ListItem(name, iconImage=icon, thumbnailImage=icon)
-            u = sys.argv[0] + '?mode=MOVIE'
-            u += '&name=%s'%urllib.quote_plus(name)
-            #-- filter parameters
-            u += '&page=%s'%urllib.quote_plus(str(int(par.page)+1))
-            u += '&genre=%s'%urllib.quote_plus(par.genre)
-            u += '&genre_name=%s'%urllib.quote_plus(par.genre_name)
-            u += '&max_page=%s'%urllib.quote_plus(str(par.max_page))
-            u += '&count=%s'%urllib.quote_plus(str(par.count))
-            xbmcplugin.addDirectoryItem(h, u, i, True)
+                mi.img, mi.url, mi.title, mi.text = '','','',''
+                
+        except:
+            pass
 
-        if int(par.page)+10 <= par.max_page :
-            name    = '[COLOR FF00FF00][PAGE +10][/COLOR]'
-            i = xbmcgui.ListItem(name, iconImage=icon, thumbnailImage=icon)
-            u = sys.argv[0] + '?mode=MOVIE'
-            u += '&name=%s'%urllib.quote_plus(name)
-            #-- filter parameters
-            u += '&page=%s'%urllib.quote_plus(str(int(par.page)+10))
-            u += '&genre=%s'%urllib.quote_plus(par.genre)
-            u += '&genre_name=%s'%urllib.quote_plus(par.genre_name)
-            u += '&max_page=%s'%urllib.quote_plus(str(par.max_page))
-            u += '&count=%s'%urllib.quote_plus(str(par.count))
-            xbmcplugin.addDirectoryItem(h, u, i, True)
-
-        xbmcplugin.endOfDirectory(h)
-
-#---------- movie list ---------------------------------------------------------
-def New_List(params):
-        #-- get filter parameters
-        par = Get_Parameters(params)
-        # -- add header info
-        Get_Header(par)
-		#== get movie list =====================================================
-		url = 'http://kinobar.net/index/novye_filmy/0-8'
-		html = get_HTML(url)
-        # -- parsing web page --------------------------------------------------
-        soup = BeautifulSoup(html)
-        # -- get movie info
-        
-        for rec in soup.findAll('div',{'class':'mat-images'}):
-            try:
-                mi.url = rec.find('div',{'class':'mat-img'}).a['href']
-				mi.title  = rec.find('div',{'class':'mat-img'}).find('img')['title'].encode('utf-8')
-				mi.img = rec.find('div',{'class':'mat-img'}).find('img')['src']
-
-                i = xbmcgui.ListItem(mi.title, iconImage=mi.img, thumbnailImage=mi.img)
-                u = sys.argv[0] + '?mode=SOURCE'
-                u += '&name=%s'%urllib.quote_plus(mi.title)
-                u += '&url=%s'%urllib.quote_plus(mi.url)
-                u += '&img=%s'%urllib.quote_plus(mi.img)
-                i.setInfo(type='video', infoLabels={ 'title':mi.title})
-                xbmcplugin.addDirectoryItem(h, u, i, True)
-            except:
-                pass
-        
-        xbmcplugin.endOfDirectory(h)
-
-#---------- movie search list --------------------------------------------------
-def Movie_Search(params):
-        #-- get filter parameters
-        par = Get_Parameters(params)
-
-        # show search dialog
-        if par.search == 'Y':
-            skbd = xbmc.Keyboard()
-            skbd.setHeading('Поиск фильмов.')
-            skbd.doModal()
-            if skbd.isConfirmed():
-                xbmc.log(str(skbd.getText()))
-                SearchStr = skbd.getText().split(':')
-                par.search = SearchStr[0]
-            else:
-                return False
-        #-- get search url
-        
-        url = 'http://kinobar.net/search/?q=' + urllib.quote_plus(par.search)
-        
-        #== get movie list =====================================================
-        html = get_HTML(url) 
-        # -- parsing web page ------------------------------------------------------
-        soup = BeautifulSoup(html)
-        
-        # -- add header info
-        Get_Header(par)
-        
-        for rec in soup.find('div',{'id':'searchText'}).findAll('div'):
-            try:
-                if rec['class'] == 'mat-img':
-                    mi.img      = rec.find('img')['src']
-                    #extract url from img also
-                    mi.url      = rec.find('a')['href']
-                if rec['class'] == 'mat-title':
-                    mi.title = rec.find('a').text.encode('utf-8')
-                if rec['class'] == 'mat-txt':
-                    mi.text = rec.text.encode('utf-8')
-                if mi.img != '' and mi.url != '' and mi.title != '' and mi.text != '':
-                    i = xbmcgui.ListItem(mi.title, iconImage=mi.img, thumbnailImage=mi.img)
-                    u = sys.argv[0] + '?mode=SOURCE'
-                    u += '&name=%s'%urllib.quote_plus(mi.title)
-                    u += '&url=%s'%urllib.quote_plus(mi.url)
-                    u += '&img=%s'%urllib.quote_plus(mi.img)
-                    i.setInfo(type='video', infoLabels={ 'title':      mi.title,
-                                                        'plot':        mi.text
-                                                        })
-                    xbmcplugin.addDirectoryItem(h, u, i, True)
-                    mi.img, mi.url, mi.title, mi.text = '','','',''
-                    
-            except:
-                pass
-
-        xbmcplugin.endOfDirectory(h)
+    xbmcplugin.endOfDirectory(h)
 
 #---------- source list ---------------------------------------------------------
 def Source_List(params):
@@ -455,19 +456,18 @@ def Source_List(params):
                 html = get_HTML(iframe['src'])
                 s_url = re.findall ( '<video width="100%" height="100%" src="(.*?)" type="video/mp4"', html, re.DOTALL)[0]
                 flv_url = re.findall ( 'file : \'(.*?)\',', html, re.DOTALL)[0]
-                xbmc.log("flv_url")
-                xbmc.log(flv_url)
                 s_title = '[COLOR FF00FF00]'+s_url.split('/')[-1]+'([/COLOR][COLOR FF00FFFF]*mp4*[/COLOR][COLOR FF00FF00])[/COLOR]'
                 s_flv_title = '[COLOR FF00FF00]'+flv_url.split('/')[-1]+'([/COLOR][COLOR FF00FFFF] *flv*[/COLOR][COLOR FF00FF00])[/COLOR]'
                 i = xbmcgui.ListItem(s_title+' '+name, iconImage=img, thumbnailImage=img)
                 i_flv = xbmcgui.ListItem(s_flv_title+' '+name, iconImage=img, thumbnailImage=img)
                 u = sys.argv[0] + '?mode=PLAY'
-                u += '&name=%s'%urllib.quote_plus(s_title+' '+name)
                 u += '&img=%s'%urllib.quote_plus(img)
                 u += '&vtype=%s'%urllib.quote_plus('MP4')
                 flv_u = u
                 u += '&url=%s'%urllib.quote_plus(s_url)
+                u += '&name=%s'%urllib.quote_plus(s_title+' '+name)
                 flv_u += '&url=%s'%urllib.quote_plus(flv_url)
+                flv_u += '&name=%s'%urllib.quote_plus(s_flv_title+' '+name)
                 xbmcplugin.addDirectoryItem(h, u, i, False)
                 xbmcplugin.addDirectoryItem(h, flv_u, i_flv, False)
     iframeurl = soup.find('object', {'id':'pl'})
@@ -481,13 +481,14 @@ def Source_List(params):
         i = xbmcgui.ListItem(s_title+' '+name, iconImage=img, thumbnailImage=img)
         i_flv = xbmcgui.ListItem(s_flv_title+' '+name, iconImage=img, thumbnailImage=img)
         u = sys.argv[0] + '?mode=PLAY'
-        u += '&name=%s'%urllib.quote_plus(s_title+' '+name)
         u += '&img=%s'%urllib.quote_plus(img)
         u += '&par_url=%s'%urllib.quote_plus(url)
         u += '&vtype=%s'%urllib.quote_plus('MP4')
         flv_u = u
         flv_u += '&url=%s'%urllib.quote_plus(flv_url)
+        flv_u += '&name=%s'%urllib.quote_plus(s_flv_title+' '+name)
         u += '&url=%s'%urllib.quote_plus(s_url)
+        u += '&name=%s'%urllib.quote_plus(s_title+' '+name)
         try:
             i.setInfo(type='video', infoLabels={'title':            mi.title,
                                                 'year':             int(mi.year),
