@@ -210,8 +210,6 @@ def Get_Header(par):
         name    = '[COLOR FFFFFF00]' + '[НОВИНКИ]' + '[/COLOR]'
         i = xbmcgui.ListItem(name, iconImage=icon, thumbnailImage=icon)
         u = sys.argv[0] + '?mode=NEW'
-        #-- filter parameters
-        u += '&search=%s'%urllib.quote_plus('Y')
         xbmcplugin.addDirectoryItem(h, u, i, True)
 
     #-- previous page
@@ -256,13 +254,13 @@ def Movie_List(params):
 
         # -- add header info
         Get_Header(par)
-
-        #== get movie list =====================================================
-        url = Get_URL(par)
-        html = get_HTML(url)
+		#== get movie list =====================================================
+		url = Get_URL(par)
+		html = get_HTML(url)
         # -- parsing web page --------------------------------------------------
         soup = BeautifulSoup(html)
         # -- get movie info
+        
         for rec in soup.find('div',{'id':'allEntries'}).findAll('div', {'id':re.compile('entryID*')}):
             try:
                 #--
@@ -316,6 +314,37 @@ def Movie_List(params):
             u += '&count=%s'%urllib.quote_plus(str(par.count))
             xbmcplugin.addDirectoryItem(h, u, i, True)
 
+        xbmcplugin.endOfDirectory(h)
+
+#---------- movie list ---------------------------------------------------------
+def New_List(params):
+        #-- get filter parameters
+        par = Get_Parameters(params)
+        # -- add header info
+        Get_Header(par)
+		#== get movie list =====================================================
+		url = 'http://kinobar.net/index/novye_filmy/0-8'
+		html = get_HTML(url)
+        # -- parsing web page --------------------------------------------------
+        soup = BeautifulSoup(html)
+        # -- get movie info
+        
+        for rec in soup.findAll('div',{'class':'mat-images'}):
+            try:
+                mi.url = rec.find('div',{'class':'mat-img'}).a['href']
+				mi.title  = rec.find('div',{'class':'mat-img'}).find('img')['title'].encode('utf-8')
+				mi.img = rec.find('div',{'class':'mat-img'}).find('img')['src']
+
+                i = xbmcgui.ListItem(mi.title, iconImage=mi.img, thumbnailImage=mi.img)
+                u = sys.argv[0] + '?mode=SOURCE'
+                u += '&name=%s'%urllib.quote_plus(mi.title)
+                u += '&url=%s'%urllib.quote_plus(mi.url)
+                u += '&img=%s'%urllib.quote_plus(mi.img)
+                i.setInfo(type='video', infoLabels={ 'title':mi.title})
+                xbmcplugin.addDirectoryItem(h, u, i, True)
+            except:
+                pass
+        
         xbmcplugin.endOfDirectory(h)
 
 #---------- movie search list --------------------------------------------------
@@ -616,8 +645,10 @@ try:
 except:
     Movie_List(params)
 
-if mode == 'MOVIE' or mode == 'NEW':
+if mode == 'MOVIE':
     Movie_List(params)
+elif mode == 'NEW':
+	New_List(params)
 elif mode == 'SEARCH':
     Movie_Search(params)
 elif mode == 'SOURCE':

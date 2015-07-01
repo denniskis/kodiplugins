@@ -28,6 +28,7 @@ class Param:
     url         = ''
     search      = ''
     par_url     = ''
+    new         = ''
 
 class Info:
     img         = ''
@@ -74,7 +75,6 @@ def get_HTML(url, post = None, ref = None, l = None):
 
     return html
 
-#---------- get parameters -----------------------------------------------------
 def Get_Parameters(params):
     #-- page
     try:    p.page = urllib.unquote_plus(params['page'])
@@ -100,6 +100,9 @@ def Get_Parameters(params):
     #-- par_url
     try:    p.par_url = urllib.unquote_plus(params['par_url'])
     except: p.par_url = ''
+    #-- new
+    try:    p.new = urllib.unquote_plus(params['new'])
+    except: p.new = ''
 
     #-----
     return p
@@ -294,14 +297,16 @@ def Source_List(params):
     xbmcplugin.endOfDirectory(h)
 
 #url = 'http://kinobar.net/news/bandy_nju_jorka/2013-06-19-2317'
-url = 'http://kinobar.net/news/poslanniki/2015-06-23-5471'
+url = 'http://kinobar.net/index/novye_filmy/0-8'
 html = get_HTML(url)
 soup = BeautifulSoup(html)
 mi = Info()
-serii = soup.find('div', {'id':'serii'})
-if serii is not None:
-    for r in serii.findAll('a'):
-        html = get_HTML(r['id'])
-        s_url = re.findall ( '<video width="100%" height="100%" src="(.*?)" type="video/mp4"', html, re.DOTALL)[0]
-        print s_url.split('/')[-1]
-        print r.text.encode('utf-8')
+ls = []
+newlist = soup.findAll('div',{'class':'mat-images'})
+for rec in newlist:
+	mi.url = rec.find('div',{'class':'mat-img'}).a['href']
+	mi.title  = rec.find('div',{'class':'mat-img'}).find('img')['title'].encode('utf-8')
+	mi.img = rec.find('div',{'class':'mat-img'}).find('img')['src']
+	
+
+
