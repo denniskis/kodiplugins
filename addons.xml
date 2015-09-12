@@ -21,7 +21,7 @@
 
 <addon id="plugin.video.x-minus.org"
        name="[COLOR FF00FF00]Караоке-минусовки ([/COLOR][COLOR FFFFF000]x-minus.org[/COLOR][COLOR FF00FF00])[/COLOR]"
-       version="1.0.0"
+       version="1.0.1"
        provider-name="Veselik">
   <requires>
     <import addon="xbmc.python" version="2.1.0"/>

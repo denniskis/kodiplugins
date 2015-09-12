@@ -327,7 +327,7 @@ def popularSingers(params):
             mi.url = URL+'/'+rec.a['href']
             mi.title  = rec.a.text.encode('utf-8')
             #mi.img = urlToImgUrl(mi.url)
-            mi.img = URL+'/'+rec.a.img[src]
+            mi.img = URL+'/'+rec.a.img['src']
 
             i = xbmcgui.ListItem(mi.title, iconImage=mi.img, thumbnailImage=mi.img)
             u = sys.argv[0] + '?mode=LIST'
