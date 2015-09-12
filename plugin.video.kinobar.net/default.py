@@ -414,17 +414,9 @@ def Source_List(params):
 
     # -- parsing web page --------------------------------------------------
     soup = BeautifulSoup(html)
-    # -- get movie info
-    for rec in soup.find('div', {'id':'traf-zona'}).findAll('p'):
-        if u'Название' in rec.text:
-            mi.title = rec.text.split(':',1)[1]
-        if u'Год' in rec.text:
-            mi.year = rec.text.split(':', 1)[1]
-        if u'Жанр' in rec.text:
-            mi.genre = rec.text.split(':', 1)[1]
-
+    
     #get source info
-    #we can display mp4 and flv sources; for now keeping only 1
+    #we can display mp4 and flv sources;
     source_number = 1
     iframe = soup.find('iframe')
     if iframe is not None: 

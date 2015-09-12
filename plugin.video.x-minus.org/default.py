@@ -140,17 +140,27 @@ def menu(par):
     xbmcplugin.addDirectoryItem(h, u, i, True)
             
     i = xbmcgui.ListItem('[COLOR FF00FFF0]Подборки[/COLOR]', iconImage=icon, thumbnailImage=icon)
+    u = sys.argv[0] + '?mode=PODBORKI'
+    xbmcplugin.addDirectoryItem(h, u, i, True)
+    
+    i = xbmcgui.ListItem('[COLOR FF00BFF0]Языки[/COLOR]', iconImage=icon, thumbnailImage=icon)
+    u = sys.argv[0] + '?mode=LANGUAGES'
+    xbmcplugin.addDirectoryItem(h, u, i, True)
+    
+    i = xbmcgui.ListItem('[COLOR FFFFFFFF]Жанры[/COLOR]', iconImage=icon, thumbnailImage=icon)
     u = sys.argv[0] + '?mode=GENRES'
     xbmcplugin.addDirectoryItem(h, u, i, True)
+    
     
     i = xbmcgui.ListItem('[COLOR FFFFFF00]' + 'Поиск' + '[/COLOR]', iconImage=icon, thumbnailImage=icon)
     u = sys.argv[0] + '?mode=SEARCH'
     #u += '&search=%s'%urllib.quote_plus('Y')
     xbmcplugin.addDirectoryItem(h, u, i, True)
-            
-    i = xbmcgui.ListItem('[COLOR FFFF0000]' + 'Новинки' + '[/COLOR]', iconImage=icon, thumbnailImage=icon)
-    u = sys.argv[0] + '?mode=NEW'
-    xbmcplugin.addDirectoryItem(h, u, i, True)
+     
+    #will be added later
+    #i = xbmcgui.ListItem('[COLOR FFFF0000]' + 'Новинки' + '[/COLOR]', iconImage=icon, thumbnailImage=icon)
+    #u = sys.argv[0] + '?mode=NEW'
+    #xbmcplugin.addDirectoryItem(h, u, i, True)
     
     xbmcplugin.endOfDirectory(h)
 
@@ -166,12 +176,16 @@ def tknd(hd):
         if (h != 1):
             c -= 1
         hd2 += chr(c)
+    #if we have brackets char convert it to z
+    if '{' in hd2:
+        hd2 = hd2.replace('{','z')
     return hd2
     
 def play(params):
     #-- get filter parameters
     par = Get_Parameters(params)
     html = get_HTML(par.url)
+    xbmc.log(str(par.song_url))
     # -- parsing web page --------------------------------------------------
     soup = BeautifulSoup(html)
     lyrics = ''
@@ -179,9 +193,10 @@ def play(params):
         lyrics = soup.find('div',{'id':'song_texts'}).text.encode('utf-8')
     except:
         pass
-    #xbmc.log(lyrics)
+    
     i = xbmcgui.ListItem(par.name, par.song_url, thumbnailImage=par.img)
-    i.setInfo(type='music', infoLabels={ 'title':par.name, 'lyrics': '(lklkslkdflksfdljk)',
+    i.setInfo(type='music', infoLabels={ 'title':par.name, 'lyrics ': '(lklkslkdflksfdljk)\n',
+    'rating': '4',
     'artist': par.artist})
     
     window = xbmcgui.WindowDialog()
@@ -192,7 +207,32 @@ def play(params):
     window.doModal()
     #xbmcgui.Dialog().ok('Test',lyrics)
     
-    
+def drawList(soup,par):
+    try:
+        for rec in soup.find('ul',{'id':'minusovki'}).findAll('li'):
+            mi.url = URL+rec.find('a',{'class':'tt'})['href'].encode('utf-8')
+            mi.title = rec.find('a',{'class':'tt'}).text.encode('utf-8')
+            mi.img = 'DefaultAudio.png'
+            if par.img != '':
+                mi.img = par.img
+            #check if we can grab the image from the table
+            if rec.find('a',{'class':'ar'}) != None:
+                mi.img = urlToImgUrl(URL+rec.find('a',{'class':'ar'})['href'])
+            songID = rec.s['id'][1:]
+            songToken = tknd(rec.s['data-t'])
+            song_url = URL+'/dwlf/'+songID+'/'+songToken+'.mp3'
+            i = xbmcgui.ListItem(mi.title, song_url, thumbnailImage=mi.img)
+            u = sys.argv[0] + '?mode=PLAY'
+            u += '&name=%s'%urllib.quote_plus(mi.title)
+            u += '&artist=%s'%urllib.quote_plus(par.name)
+            u += '&url='+urllib.quote_plus(mi.url)
+            u += '&img=%s'%urllib.quote_plus(mi.img)
+            u += '&song_url=%s'%urllib.quote_plus(song_url)
+            i.setInfo(type='music', infoLabels={ 'title':mi.title})
+            xbmcplugin.addDirectoryItem(h, u, i, False)
+    except:
+        pass        
+    xbmcplugin.endOfDirectory(h)    
     
 def list(params):
     #-- get filter parameters
@@ -200,23 +240,80 @@ def list(params):
     html = get_HTML(par.url)
     # -- parsing web page --------------------------------------------------
     soup = BeautifulSoup(html)
-    for rec in soup.find('ul',{'id':'minusovki'}).findAll('li'):
-        mi.url = URL+rec.find('a',{'class':'tt'})['href'].encode('utf-8')
-        mi.title = rec.find('a',{'class':'tt'}).text.encode('utf-8')
-        songID = rec.s['id'][1:]
-        songToken = tknd(rec.s['data-s'])
-        song_url = URL+'/dwlf/'+songID+'/'+songToken+'.mp3'
-        i = xbmcgui.ListItem(mi.title, song_url, thumbnailImage=par.img)
-        u = sys.argv[0] + '?mode=PLAY'
-        u += '&name=%s'%urllib.quote_plus(mi.title)
-        u += '&artist=%s'%urllib.quote_plus(par.name)
-        u += '&url='+urllib.quote_plus(mi.url)
-        u += '&img=%s'%urllib.quote_plus(par.img)
-        u += '&song_url=%s'%urllib.quote_plus(song_url)
-        i.setInfo(type='music', infoLabels={ 'title':mi.title})
-        xbmcplugin.addDirectoryItem(h, u, i, False)
-        
+    drawList(soup,par)
+
+def podborki(params):
+    #-- get filter parameters
+    par = Get_Parameters(params)
+    html = get_HTML(URL+'?tag_cloud=1')
+    # -- parsing web page --------------------------------------------------
+    soup = BeautifulSoup(html)
+    
+    for rec in soup.find('div',{'id':'tag-cloud-theme'}).findAll('a'):
+        try:
+            mi.url = URL+'/'+rec['href']
+            mi.title  = rec.text.encode('utf-8')
+            i = xbmcgui.ListItem(mi.title, iconImage='DefaultAudio.png', thumbnailImage='DefaultAudio.png')
+            u = sys.argv[0] + '?mode=LIST'
+            u += '&name=%s'%urllib.quote_plus(mi.title)
+            u += '&url=%s'%urllib.quote_plus(mi.url)
+            
+            i.setInfo(type='video', infoLabels={ 'title':mi.title})
+            
+            xbmcplugin.addDirectoryItem(h, u, i, True)
+        except:
+            pass
+    
     xbmcplugin.endOfDirectory(h)
+
+def languages(params):
+    #-- get filter parameters
+    par = Get_Parameters(params)
+    html = get_HTML(URL+'?tag_cloud=1')
+    # -- parsing web page --------------------------------------------------
+    soup = BeautifulSoup(html)
+    
+    for rec in soup.find('div',{'id':'tag-cloud-lang'}).findAll('a'):
+        try:
+            mi.url = URL+'/'+rec['href']
+            mi.title  = rec.text.encode('utf-8')
+            i = xbmcgui.ListItem(mi.title, iconImage='DefaultAudio.png', thumbnailImage='DefaultAudio.png')
+            u = sys.argv[0] + '?mode=LIST'
+            u += '&name=%s'%urllib.quote_plus(mi.title)
+            u += '&url=%s'%urllib.quote_plus(mi.url)
+            
+            i.setInfo(type='video', infoLabels={ 'title':mi.title})
+            
+            xbmcplugin.addDirectoryItem(h, u, i, True)
+        except:
+            pass
+    
+    xbmcplugin.endOfDirectory(h)
+
+def genres(params):
+    #-- get filter parameters
+    par = Get_Parameters(params)
+    html = get_HTML(URL+'?tag_cloud=1')
+    # -- parsing web page --------------------------------------------------
+    soup = BeautifulSoup(html)
+    
+    for rec in soup.find('div',{'id':'tag-cloud-genre'}).findAll('a'):
+        try:
+            mi.url = URL+'/'+rec['href']
+            mi.title  = rec.text.encode('utf-8')
+            i = xbmcgui.ListItem(mi.title, iconImage='DefaultAudio.png', thumbnailImage='DefaultAudio.png')
+            u = sys.argv[0] + '?mode=LIST'
+            u += '&name=%s'%urllib.quote_plus(mi.title)
+            u += '&url=%s'%urllib.quote_plus(mi.url)
+            
+            i.setInfo(type='video', infoLabels={ 'title':mi.title})
+            
+            xbmcplugin.addDirectoryItem(h, u, i, True)
+        except:
+            pass
+    
+    xbmcplugin.endOfDirectory(h)
+
     
 def popularSingers(params):
     #-- get filter parameters
@@ -229,7 +326,8 @@ def popularSingers(params):
         try:
             mi.url = URL+'/'+rec.a['href']
             mi.title  = rec.a.text.encode('utf-8')
-            mi.img = URL+'/'+rec.a.img['src']
+            #mi.img = urlToImgUrl(mi.url)
+            mi.img = URL+'/'+rec.a.img[src]
 
             i = xbmcgui.ListItem(mi.title, iconImage=mi.img, thumbnailImage=mi.img)
             u = sys.argv[0] + '?mode=LIST'
@@ -244,118 +342,38 @@ def popularSingers(params):
     
     xbmcplugin.endOfDirectory(h)
 
-#---------- movie search list --------------------------------------------------
-def Movie_Search(params):
+
+def search(params):
     #-- get filter parameters
     par = Get_Parameters(params)
 
     # show search dialog
-    if par.search == 'Y':
-        skbd = xbmc.Keyboard()
-        skbd.setHeading('Поиск фильмов.')
-        skbd.doModal()
-        if skbd.isConfirmed():
-            xbmc.log(str(skbd.getText()))
-            SearchStr = skbd.getText().split(':')
-            par.search = SearchStr[0]
-        else:
-            return False
-    #-- get search url
+    #if par.search == 'Y':
+    skbd = xbmc.Keyboard()
+    skbd.setHeading('Поиск минусовок.')
+    skbd.doModal()
+    if skbd.isConfirmed():
+        xbmc.log(str(skbd.getText()))
+        SearchStr = skbd.getText().split(':')
+        par.search = SearchStr[0]
+    else:
+        return False
     
-    url = 'http://kinobar.net/search/?q=' + urllib.quote_plus(par.search)
-    
-    #== get movie list =====================================================
-    html = get_HTML(url) 
-    # -- parsing web page ------------------------------------------------------
+    url = URL+'/search/' #+ urllib.quote_plus(par.search)
+    #check later if we need to encode chars here
+    data = urllib.urlencode({'q': par.search})
+    f = urllib.urlopen(url, data)
+    html = f.read()
     soup = BeautifulSoup(html)
     
-    # -- add header info
-    Get_Header(par)
-    
-    for rec in soup.find('div',{'id':'searchText'}).findAll('div'):
-        try:
-            if rec['class'] == 'mat-img':
-                mi.img      = rec.find('img')['src']
-                #extract url from img also
-                mi.url      = rec.find('a')['href']
-            if rec['class'] == 'mat-title':
-                mi.title = rec.find('a').text.encode('utf-8')
-            if rec['class'] == 'mat-txt':
-                mi.text = rec.text.encode('utf-8')
-            if mi.img != '' and mi.url != '' and mi.title != '' and mi.text != '':
-                i = xbmcgui.ListItem(mi.title, iconImage=mi.img, thumbnailImage=mi.img)
-                u = sys.argv[0] + '?mode=SOURCE'
-                u += '&name=%s'%urllib.quote_plus(mi.title)
-                u += '&url=%s'%urllib.quote_plus(mi.url)
-                u += '&img=%s'%urllib.quote_plus(mi.img)
-                i.setInfo(type='video', infoLabels={ 'title':      mi.title,
-                                                    'plot':        mi.text
-                                                    })
-                xbmcplugin.addDirectoryItem(h, u, i, True)
-                mi.img, mi.url, mi.title, mi.text = '','','',''
-                
-        except:
-            pass
+    drawList(soup,par)
 
-    xbmcplugin.endOfDirectory(h)
-
-def PLAYbak(params):
-    try:
-        # -- parameters
-        url   = urllib.unquote_plus(params['url'])
-        img   = urllib.unquote_plus(params['img'])
-        name  = urllib.unquote_plus(params['name'])
-        vtype = urllib.unquote_plus(params['vtype'])
-
-        if url == '*':
-            return False
-
-        video = url
-        # -- get VKontakte video url
-        if vtype == 'VK':
-            url = url.replace('vkontakte.ru', 'vk.com')
-            html = get_HTML(url)
-
-            soup = BeautifulSoup(html, fromEncoding="windows-1251")
-
-            for rec in soup.findAll('script', {'type':'text/javascript'}):
-                if 'video_host' in rec.text:
-                    for r in re.compile('var (.+?) = \'(.+?)\';').findall(html):
-                        if r[0] == 'video_host':
-                            video_host = r[1]#.replace('userapi', 'vk')
-                        if r[0] == 'video_uid':
-                            video_uid = r[1]
-                        if r[0] == 'video_vtag':
-                            video_vtag = r[1]
-            video = '%su%s/videos/%s.720.mp4'%(video_host, video_uid, video_vtag)
-            html = get_HTML(video, None, None, 1000)
-
-
-            for rec in soup.findAll('param', {'name':'flashvars'}):
-                for s in rec['value'].split('&'):
-                    if s.split('=',1)[0] == 'uid':
-                        uid = s.split('=',1)[1]
-                    if s.split('=',1)[0] == 'vtag':
-                        vtag = s.split('=',1)[1]
-                    if s.split('=',1)[0] == 'host':
-                        host = s.split('=',1)[1]
-                    if s.split('=',1)[0] == 'vid':
-                        vid = s.split('=',1)[1]
-                    if s.split('=',1)[0] == 'oid':
-                        oid = s.split('=',1)[1]
-
-            url = 'http://vk.com/videostats.php?act=view&oid='+oid+'&vid='+vid+'&quality=720'
-            print url
-            ref = 'http://vk.com'+soup.find('param',{'name':'movie'})['value']
-            print ref
-            html = get_HTML(url, None, ref)
-
-        # -- play video
-        i = xbmcgui.ListItem(name, video, thumbnailImage=img)
-        xbmc.Player().play(video, i)
-    except:
-        pass
-#-------------------------------------------------------------------------------
+def urlToImgUrl(url):
+    #check if the last char is '/'
+    if url[-1] == '/':
+        return 'http://x-minus.org/img/artists/' + url.split('/')[-2] + 'mid.jpg'
+    else:
+        return 'http://x-minus.org/img/artists/' + url.split('/')[-1] + 'mid.jpg'
 
 def unescape(text):
     try:
@@ -369,9 +387,6 @@ def unescape(text):
         text = text
 
     return text
-
-def get_url(url):
-    return "http:"+urllib.quote(url.replace('http:', ''))
 
 #-------------------------------------------------------------------------------
 def get_params(paramstring):
@@ -402,7 +417,7 @@ p  = Param()
 mi = Info()
 
 URL = 'http://x-minus.org'
-
+IMG_URL = 'http://x-minus.org/img/artists/'
 mode = None
 
 try:
@@ -412,17 +427,17 @@ except:
 
 if mode == 'LIST':
     list(params)
-elif mode == 'NEW':
-	New_List(params)
 elif mode == 'MENU':
-	menu(params)    
+    menu(params)    
 elif mode == 'SEARCH':
-    Movie_Search(params)
-elif mode == 'SOURCE':
-    Source_List(params)
+    search(params)
+elif mode == 'LANGUAGES':
+    languages(params)
 elif mode == 'GENRES':
-    Genre_List(params)
+    genres(params)
 elif mode == 'POPULAR':
     popularSingers(params)
+elif mode == 'PODBORKI':
+    podborki(params)    
 elif mode == 'PLAY':
     play(params)

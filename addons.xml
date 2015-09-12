@@ -2,7 +2,7 @@
 <addons>
 <addon id="plugin.video.kinobar.net"
        name="[COLOR FF00FF00]Кино портал ([/COLOR][COLOR FFFFF000]kinobar.net[/COLOR][COLOR FF00FF00])[/COLOR]"
-       version="1.0.2"
+       version="1.0.3"
        provider-name="Veselik">
   <requires>
     <import addon="xbmc.python" version="2.1.0"/>
@@ -15,6 +15,25 @@
   <extension point="xbmc.addon.metadata">
     <summary>kinobar.net</summary>
     <description>Фильмы и сериалы онлайн.</description>
+    <platform>all</platform>
+  </extension>
+</addon>
+
+<addon id="plugin.video.x-minus.org"
+       name="[COLOR FF00FF00]Караоке-минусовки ([/COLOR][COLOR FFFFF000]x-minus.org[/COLOR][COLOR FF00FF00])[/COLOR]"
+       version="1.0.0"
+       provider-name="Veselik">
+  <requires>
+    <import addon="xbmc.python" version="2.1.0"/>
+  </requires>
+  <extension point="xbmc.python.pluginsource"
+             provides="video"
+             library="default.py">
+    <provides>video</provides>
+  </extension>
+  <extension point="xbmc.addon.metadata">
+    <summary>x-minus.org</summary>
+    <description>Караоке-минусовки с сайта x-minus.org.</description>
     <platform>all</platform>
   </extension>
 </addon>
